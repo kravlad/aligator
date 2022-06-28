@@ -59,7 +59,7 @@ if __name__ == "__main__":
     # handler(test)
     
     scheduler = AsyncIOScheduler()
-    scheduler.add_job(handler, "interval", kwargs={'event': test}, seconds=30)
+    scheduler.add_job(handler, "interval", kwargs={'event': test}, hours=3)
     scheduler.start()
     
     try:
