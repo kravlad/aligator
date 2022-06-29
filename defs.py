@@ -1,6 +1,7 @@
 import asyncio
 import requests
 import json
+import boto3
 from datetime import datetime, timedelta
 from configs.storage import settings as sets
 
@@ -97,23 +98,21 @@ async def save_bm(confile):
 
 async def bm(data=None):
     if hosting:
+        s3 = boto3.resource('s3')
+        mybucket = ''
         confile = '/tmp/telegram.json'
     else:
-        confile = sets['file_cfg']['bm_path']['telegram']
+        confile = 'files/telegram.json'
     
     if data:
         with open(confile, 'w+') as f:
             json.dump(data, f)
         
         if hosting:
-            s3 = boto3.resource('s3')
-            mybucket = ''
             s3.meta.client.upload_file(confile, mybucket, 'aligator/bm/telegram.json')
 
     else:
         if hosting:
-            s3 = boto3.resource('s3')
-            mybucket = ''
             s3.meta.client.download_file(mybucket, 'aligator/bm/telegram.json', confile)
         
         with open(confile, 'r') as f:
