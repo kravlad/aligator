@@ -3,12 +3,12 @@ import asyncio
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
-from apscheduler.schedulers.asyncio import AsyncIOScheduler # pip3 install apscheduler
+# from apscheduler.schedulers.asyncio import AsyncIOScheduler # pip3 install apscheduler
 
 from defs import replacing, send_telegram, bm
 from configs.storage import settings as sets
 
-scheduler = AsyncIOScheduler(daemon=True)
+# scheduler = AsyncIOScheduler(daemon=True)
 tg_link = sets['cfg'].links['telegram']
 replacement = sets['cfg'].replacement['telegram']
 news_chan = sets['news_chan']

@@ -37,17 +37,17 @@ def handler(event={}, context=None):
 if __name__ == "__main__":
     test = {"parse": {"telegram": [
                                 "meduzalive",
-                                # "svtvnews",
-                                # "theinsider",
-                                # "proektproekt",
-                                # "agentstvonews",
-                                # "istories_media",
-                                # "takiedela",
-                                # "thevillagemsk",
-                                # "mediazonalinks",
-                                # "tvrain",
-                                # "novaya_pishet",
-                                # "tele_eve"
+                                "svtvnews",
+                                "theinsider",
+                                "proektproekt",
+                                "agentstvonews",
+                                "istories_media",
+                                "takiedela",
+                                "thevillagemsk",
+                                "mediazonalinks",
+                                "tvrain",
+                                "novaya_pishet",
+                                "tele_eve"
                                 ]}}
     # test = {
     #         "get_bm": {

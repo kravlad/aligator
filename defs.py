@@ -91,7 +91,11 @@ async def send_telegram(text: str, chat_id=news_chan):
         raise Exception(r.text)
 
 async def save_bm(src):
-    confile = f'files/{src}.json'
+    if hosting:
+        confile = f'/tmp/{src}.json'
+        await aws_s3_duoload(f'aligator/bm/{src}.json', confile, True)
+    else:
+        confile = f'files/{src}.json'
     with open(confile, 'r') as f:
         text = f.read()
     await send_telegram(text, log_chan)
@@ -99,11 +103,11 @@ async def save_bm(src):
 
 async def aws_s3_duoload(src, to, dl):
     s3 = boto3.resource('s3')
-    mybucket = ''
+    mybucket = 'my-work-frt-bucket'
     if dl:
         s3.meta.client.download_file(mybucket, src, to)
     else:
-        s3.meta.client.upload_file(mybucket, src, to)
+        s3.meta.client.upload_file(src, mybucket, to)
 
 
 
@@ -118,11 +122,11 @@ async def bm(src, data=None):
             json.dump(data, f)
         
         if hosting:
-            await aws_s3_duoload(False, confile, f'aligator/bm/{src}.json')
+            await aws_s3_duoload(confile, f'aligator/bm/{src}.json', False)
 
     else:
         if hosting:
-            await aws_s3_duoload(True, f'aligator/bm/{src}.json', confile)
+            await aws_s3_duoload(f'aligator/bm/{src}.json', confile, True)
         
         with open(confile, 'r') as f:
             data = json.load(f)
