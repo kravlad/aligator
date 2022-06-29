@@ -67,7 +67,7 @@ async def sending(msgs, chat_id=news_chan):
 
 
 async def tg_parsing(sources):
-    bookmarks = await bm()
+    bookmarks = await bm(src='telegram')
     # sources = list(bookmarks.keys())
     data = {}
     for source in sources:
@@ -134,7 +134,7 @@ async def tg_parsing(sources):
             
         await asyncio.sleep(3)
     
-    await bm(bookmarks)
+    await bm(src='telegram', data=bookmarks)
     
     if data.get('tele_eve'):
         data.pop('tele_eve')

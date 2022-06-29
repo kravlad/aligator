@@ -1,9 +1,8 @@
 import json
 import asyncio
-import boto3
 # from apscheduler.schedulers.asyncio import AsyncIOScheduler # pip3 install apscheduler
 
-from defs import send_telegram, save_bm
+from defs import send_telegram, bm, save_bm
 from configs.storage import settings as sets
 from parsing.telegram import tg_parsing
 # from parsing.finance import fin_parsing
@@ -22,17 +21,17 @@ def handler(event={}, context=None):
                 loop = asyncio.get_event_loop().run_until_complete
                 loop(func(arg))
 
-    # elif event.get('get_bm'):
-    #     for i in event['get_bm'].keys():
-    #         confile = sets['file_cfg']['bm_path'][i]
-    #         with open(confile, 'w+') as f:
-    #             json.dump(event['get_bm'][i], f)
-
-    # elif event.get('save_bm'):
-    #     for i in event['save_bm']:
-    #         confile = sets['file_cfg']['bm_path'][i]
-    #         loop = asyncio.get_event_loop().run_until_complete
-    #         loop(save_bm(confile))
+    elif event.get('get_bm'):
+        for i in event['get_bm'].keys():
+            data =  event['get_bm'][i]
+            loop = asyncio.get_event_loop().run_until_complete
+            loop(bm(i, data))
+            
+    elif event.get('save_bm'):
+        for i in event['save_bm']:
+            # confile = sets['file_cfg']['bm_path'][i]
+            loop = asyncio.get_event_loop().run_until_complete
+            loop(save_bm(i))
 
 
 if __name__ == "__main__":
@@ -53,8 +52,8 @@ if __name__ == "__main__":
     # test = {
     #         "get_bm": {
     #             "telegram": {
-    #                 "meduzalive": 63070,
-    #                 "svtvnews": 10416
+    #                 "meduzalive": 63275,
+    #                 "svtvnews": 10410
     #         }}}
     # test = {"save_bm": ["telegram"]}
     
