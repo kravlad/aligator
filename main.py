@@ -1,6 +1,7 @@
 import json
 import asyncio
-from apscheduler.schedulers.asyncio import AsyncIOScheduler # pip3 install apscheduler
+import boto3
+# from apscheduler.schedulers.asyncio import AsyncIOScheduler # pip3 install apscheduler
 
 from defs import send_telegram, save_bm
 from configs.storage import settings as sets
@@ -11,15 +12,15 @@ funcs = {
     'telegram': tg_parsing
 }
 
-async def handler(event={}): #, context=None):
+def handler(event={}, context=None):
     if event.get('parse'):
         sources = event['parse'].keys()
         for src in sources:
             if funcs.get(src):
                 func = funcs[src]
                 arg = event['parse'][src]
-                # loop = asyncio.get_event_loop().run_until_complete
-                await func(arg)
+                loop = asyncio.get_event_loop().run_until_complete
+                loop(func(arg))
 
     # elif event.get('get_bm'):
     #     for i in event['get_bm'].keys():
@@ -38,16 +39,16 @@ if __name__ == "__main__":
     test = {"parse": {"telegram": [
                                 "meduzalive",
                                 "svtvnews",
-                                "theinsider",
-                                "proektproekt",
-                                "agentstvonews",
-                                "istories_media",
-                                "takiedela",
-                                "thevillagemsk",
-                                "mediazonalinks",
-                                "tvrain",
-                                "novaya_pishet",
-                                "tele_eve"
+                                # "theinsider",
+                                # "proektproekt",
+                                # "agentstvonews",
+                                # "istories_media",
+                                # "takiedela",
+                                # "thevillagemsk",
+                                # "mediazonalinks",
+                                # "tvrain",
+                                # "novaya_pishet",
+                                # "tele_eve"
                                 ]}}
     # test = {
     #         "get_bm": {
@@ -56,24 +57,17 @@ if __name__ == "__main__":
     #                 "svtvnews": 10416
     #         }}}
     # test = {"save_bm": ["telegram"]}
-    # handler(test)
     
-    scheduler = AsyncIOScheduler()
-    scheduler.add_job(handler, "interval", kwargs={'event': test}, hours=3)
-    scheduler.start()
+    handler(test) # once local start
     
-    try:
-        asyncio.get_event_loop().run_forever()
+    
+    # scheduler = AsyncIOScheduler()
+    # scheduler.add_job(handler, "interval", kwargs={'event': test}, hours=3)
+    # scheduler.start()
+    
+    # try:
+    #     asyncio.get_event_loop().run_forever()
 
-    except (KeyboardInterrupt, SystemExit):
-            pass
+    # except (KeyboardInterrupt, SystemExit):
+    #         pass
     
-    
-    
-        # scheduler.add_job(sending,
-    #                         'date',
-    #                         kwargs={'msgs': msgs},
-    #                         run_date=run_date,
-    #                         timezone=config.timezone,
-    #                         misfire_grace_time=60
-    #                         )    

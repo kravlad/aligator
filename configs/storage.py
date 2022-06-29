@@ -2,6 +2,9 @@ import os
 import json
 import configs.config as cfg
 
+cwd = os.getcwd().split('/')[1]
+hosting = True if cwd == 'var' else False
+
 with open('configs/config.json', 'r') as f:
     file_cfg = json.load(f)
 
@@ -11,5 +14,6 @@ settings = {
     'summ_chan': os.environ.get('SUMM_CHAN'),
     'log_chan': os.environ.get('LOG_CHAN'),
     'file_cfg': file_cfg,
-    'cfg': cfg
+    'cfg': cfg,
+    'hosting': hosting
 }
