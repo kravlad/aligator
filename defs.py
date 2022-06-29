@@ -1,11 +1,12 @@
 import asyncio
 import requests
+import json
 from datetime import datetime, timedelta
 from configs.storage import settings as sets
 
 news_chan = sets['news_chan']
 log_chan = sets['log_chan']
-
+hosting = sets['hosting']
 
 async def replacing(text, replacements, spell=False):
     if text is None:
@@ -94,5 +95,27 @@ async def save_bm(confile):
     await send_telegram(text, log_chan)
 
 
-if __name__ == '__main__':
-    send_telegram("hello world!")
+async def bm(data=None):
+    if hosting:
+        confile = '/tmp/telegram.json'
+    else:
+        confile = sets['file_cfg']['bm_path']['telegram']
+    
+    if data:
+        with open(confile, 'w+') as f:
+            json.dump(data, f)
+        
+        if hosting:
+            s3 = boto3.resource('s3')
+            mybucket = ''
+            s3.meta.client.upload_file(confile, mybucket, 'aligator/bm/telegram.json')
+
+    else:
+        if hosting:
+            s3 = boto3.resource('s3')
+            mybucket = ''
+            s3.meta.client.download_file(mybucket, 'aligator/bm/telegram.json', confile)
+        
+        with open(confile, 'r') as f:
+            data = json.load(f)
+    return data

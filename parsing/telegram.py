@@ -5,13 +5,12 @@ from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 from apscheduler.schedulers.asyncio import AsyncIOScheduler # pip3 install apscheduler
 
-from defs import replacing, send_telegram
+from defs import replacing, send_telegram, bm
 from configs.storage import settings as sets
 
 scheduler = AsyncIOScheduler(daemon=True)
 tg_link = sets['cfg'].links['telegram']
 replacement = sets['cfg'].replacement['telegram']
-confile = sets['file_cfg']['bm_path']['telegram']
 news_chan = sets['news_chan']
 summ_chan = sets['summ_chan']
 
@@ -68,8 +67,7 @@ async def sending(msgs, chat_id=news_chan):
 
 
 async def tg_parsing(sources):
-    with open(confile, 'r') as f:
-        bookmarks = json.load(f)
+    bookmarks = await bm()
     # sources = list(bookmarks.keys())
     data = {}
     for source in sources:
@@ -136,8 +134,7 @@ async def tg_parsing(sources):
             
         await asyncio.sleep(3)
     
-    with open(confile, 'w+') as f:
-        json.dump(bookmarks, f)
+    await bm(bookmarks)
     
     if data.get('tele_eve'):
         data.pop('tele_eve')

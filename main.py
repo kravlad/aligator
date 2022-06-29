@@ -38,7 +38,7 @@ def handler(event={}, context=None):
 if __name__ == "__main__":
     test = {"parse": {"telegram": [
                                 "meduzalive",
-                                "svtvnews",
+                                # "svtvnews",
                                 # "theinsider",
                                 # "proektproekt",
                                 # "agentstvonews",
