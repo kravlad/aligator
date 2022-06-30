@@ -1,13 +1,13 @@
-import json
 import asyncio
 # from apscheduler.schedulers.asyncio import AsyncIOScheduler # pip3 install apscheduler
+# import json
 
-from defs import send_telegram, bm, save_bm
-from configs.storage import settings as sets
+from defs import bm, save_bm
 from parsing.telegram import parsing_tg
 from parsing.intermedia import parsing_intermedia
 from parsing.kinonews import parsing_kinonews
 # from parsing.finance import fin_parsing
+# from configs.storage import settings as sets
 
 funcs = {
     'telegram': parsing_tg,
@@ -39,12 +39,10 @@ def handler(event={}, context=None):
 
 
 if __name__ == "__main__":
-    test = {"parse": {
-                    "intermedia": [],
-                    # "kinonews": [],
-        
-                    # "telegram": [
-                    #             "meduzalive",
+    test = {"parse": {"intermedia": []}}
+    # test = {"parse": {"kinonews": []}}
+    # test = {"parse": {"telegram": [
+    #                             "meduzalive",
     #                             "svtvnews",
     #                             "theinsider",
     #                             "proektproekt",
@@ -56,11 +54,8 @@ if __name__ == "__main__":
     #                             "tvrain",
     #                             "novaya_pishet",
     #                             "tele_eve"
-                                # ]
-            }}
-    # test = {
-    #         "get_bm": {
-    #             "telegram": {
+    #                             ]}}
+    # test = {"get_bm": {"telegram": {
     #                 "meduzalive": 63275,
     #                 "svtvnews": 10410
     #         }}}
@@ -79,7 +74,4 @@ if __name__ == "__main__":
     # except (KeyboardInterrupt, SystemExit):
     #         pass
     
-    # import asyncio
-    # test = asyncio.run(parsing_kinonews('kinonews'))
-
-    # print(test)
+    # test = asyncio.run(parsing_kinonews([]))

@@ -1,23 +1,19 @@
-import asyncio
-import requests
 import json
 import boto3
+import asyncio
+import requests
 from bs4 import BeautifulSoup
-
 from datetime import datetime, timedelta
+
+import configs.config as cfg
 from configs.storage import settings as sets
 
 news_chan = sets['news_chan']
 log_chan = sets['log_chan']
+bm_path = sets['bm_path']
 hosting = sets['hosting']
-tg_link = sets['cfg'].links['telegram']
-
-pips = {
-    'telegram': '🔹',
-    'kinonews': '🎬',
-    'intermedia': '🎵',
-    
-}
+tg_link = cfg.urls['telegram']
+pips = cfg.pips
 
 async def replacing(text, replacements, spell=False):
     if text is None:
@@ -103,11 +99,9 @@ async def send_telegram(text: str, chat_id=news_chan):
 
 
 async def save_bm(src):
+    confile = f'{bm_path}{src}.json'
     if hosting:
-        confile = f'/tmp/{src}.json'
         await aws_s3_dupload(f'aligator/bm/{src}.json', confile, True)
-    else:
-        confile = f'files/{src}.json'
     with open(confile, 'r') as f:
         text = f.read()
     await send_telegram(text, log_chan)
@@ -123,21 +117,14 @@ async def aws_s3_dupload(src, to, dl):
 
 
 async def bm(src, data=None):
-    # if hosting:
-    #     confile = f'/tmp/{src}.json'
-    # else:
-    #     confile = f'files/{src}.json'
-    
-    x = '/tmp' if hosting else 'files'
-    confile = f'{x}/{src}.json'
-    
+    confile = f'{bm_path}{src}.json'
     if data:
         with open(confile, 'w+') as f:
             json.dump(data, f)
         
         if hosting:
             await aws_s3_dupload(confile, f'aligator/bm/{src}.json', False)
-
+    
     else:
         if hosting:
             await aws_s3_dupload(f'aligator/bm/{src}.json', confile, True)

@@ -1,7 +1,7 @@
 import json
 import requests
-from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
+from datetime import datetime
 
 # import tools.mongodb as db
 import configs.config as cfg

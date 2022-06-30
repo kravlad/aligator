@@ -136,3 +136,4 @@ files/
 tmp/
 notes.txt
 configs/config.json
+test.py

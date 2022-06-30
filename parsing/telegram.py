@@ -2,20 +2,21 @@ import json
 import asyncio
 import requests
 from bs4 import BeautifulSoup
-from datetime import datetime, timedelta
+from datetime import datetime
 # from apscheduler.schedulers.asyncio import AsyncIOScheduler # pip3 install apscheduler
 
-from defs import replacing, send_telegram, bm, making, sending
+import configs.config as cfg
 from configs.storage import settings as sets
+from defs import replacing, send_telegram, bm, making, sending
 
 # scheduler = AsyncIOScheduler(daemon=True)
-tg_link = sets['cfg'].links['telegram']
-replacement = sets['cfg'].replacement['telegram']
+tg_link = cfg.urls['telegram']
+replacement = cfg.replacement['telegram']
 summ_chan = sets['summ_chan']
 
 
 async def daily(data):
-    msgs = await making(data, False, hashtag=' | #главное')
+    msgs = await making(data, header=False, hashtag=' | #главное')
     await sending(msgs, summ_chan)
     # run_date = datetime.now() + timedelta(minutes=10)
     # scheduler.add_job(sending,

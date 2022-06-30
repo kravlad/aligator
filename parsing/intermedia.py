@@ -1,7 +1,7 @@
 import json
 import requests
-from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
+from datetime import datetime
 
 import configs.config as cfg
 from defs import send_telegram, bm, making, sending
