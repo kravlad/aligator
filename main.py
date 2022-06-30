@@ -4,12 +4,12 @@ import asyncio
 
 from defs import send_telegram, bm, save_bm
 from configs.storage import settings as sets
-from parsing.telegram import tg_parsing
+from parsing.telegram import parsing_tg
 from parsing.kinonews import parsing_kinonews
 # from parsing.finance import fin_parsing
 
 funcs = {
-    'telegram': tg_parsing,
+    'telegram': parsing_tg,
     'kinonews': parsing_kinonews
 }
 

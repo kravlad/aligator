@@ -12,6 +12,11 @@ log_chan = sets['log_chan']
 hosting = sets['hosting']
 tg_link = sets['cfg'].links['telegram']
 
+pips = {
+    'telegram': '🔹',
+    'kinonews': '🎬',
+    
+}
 
 async def replacing(text, replacements, spell=False):
     if text is None:
@@ -97,7 +102,7 @@ async def send_telegram(text: str, chat_id=news_chan):
 async def save_bm(src):
     if hosting:
         confile = f'/tmp/{src}.json'
-        await aws_s3_duoload(f'aligator/bm/{src}.json', confile, True)
+        await aws_s3_dupload(f'aligator/bm/{src}.json', confile, True)
     else:
         confile = f'files/{src}.json'
     with open(confile, 'r') as f:
@@ -105,14 +110,13 @@ async def save_bm(src):
     await send_telegram(text, log_chan)
 
 
-async def aws_s3_duoload(src, to, dl):
+async def aws_s3_dupload(src, to, dl):
     s3 = boto3.resource('s3')
     mybucket = 'my-work-frt-bucket'
     if dl:
         s3.meta.client.download_file(mybucket, src, to)
     else:
         s3.meta.client.upload_file(src, mybucket, to)
-
 
 
 async def bm(src, data=None):
@@ -126,11 +130,11 @@ async def bm(src, data=None):
             json.dump(data, f)
         
         if hosting:
-            await aws_s3_duoload(confile, f'aligator/bm/{src}.json', False)
+            await aws_s3_dupload(confile, f'aligator/bm/{src}.json', False)
 
     else:
         if hosting:
-            await aws_s3_duoload(f'aligator/bm/{src}.json', confile, True)
+            await aws_s3_dupload(f'aligator/bm/{src}.json', confile, True)
         
         with open(confile, 'r') as f:
             data = json.load(f)
@@ -140,6 +144,7 @@ async def bm(src, data=None):
 async def making(data, link='@{}', header=True, hashtag=''):
     new_data = []
     for source in data.keys():
+        pip = pips.get(source, '🔹')
         source_link = link.format(source)
         head = f'#{source} | {source_link}{hashtag}\n'
         msg = ''
@@ -155,7 +160,7 @@ async def making(data, link='@{}', header=True, hashtag=''):
                     else:
                         text = data[source][n]['html_text']
                     lnk = data[source][n]['link']
-                    item = f'\n🔹{text} / <a href="{lnk}">read</a>\n'
+                    item = f'\n{pip}{text} / <a href="{lnk}">read</a>\n'
                     if i <= 15:
                         msg = f'{msg}{item}'
                         i += 1
@@ -174,4 +179,3 @@ async def sending(msgs, chat_id=news_chan):
     for msg in msgs:
         await send_telegram(msg, chat_id)
         await asyncio.sleep(3)
-

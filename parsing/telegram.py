@@ -27,7 +27,7 @@ async def daily(data):
     #                         )    
 
 
-async def tg_parsing(sources):
+async def parsing_tg(sources):
     bookmarks = await bm(src='telegram')
     # sources = list(bookmarks.keys())
     data = {}
@@ -41,7 +41,7 @@ async def tg_parsing(sources):
         content = r.text.split('data-post=')
         if len(content) > 0:
             source = source.split('?')[0]
-            last_id = bookmarks[source]
+            last_id = bookmarks['bookmarks'][source]
             if not data.get(source):
                 data[source] = {}
             all_ids = []
@@ -91,10 +91,11 @@ async def tg_parsing(sources):
             if all_ids[0] > last_id:
                 sources.append(f'{source}?before={m_ids[0]}')
             else:
-                bookmarks[source] = m_ids[-1]
+                bookmarks['bookmarks'][source] = m_ids[-1]
             
         await asyncio.sleep(3)
     
+    bookmarks['date'] = str(datetime.now())
     await bm(src='telegram', data=bookmarks)
     
     if data.get('tele_eve'):
