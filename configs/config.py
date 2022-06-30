@@ -77,7 +77,7 @@ urls = {
             }
     },
     
-    'musicnews': {
+    'intermedia': {
         'website': 'https://www.intermedia.ru',
         'url': '/rubrics/1'
     },

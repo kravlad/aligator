@@ -15,6 +15,7 @@ tg_link = sets['cfg'].links['telegram']
 pips = {
     'telegram': '🔹',
     'kinonews': '🎬',
+    'intermedia': '🎵',
     
 }
 
@@ -74,11 +75,12 @@ async def get_balls(num):
 
 
 async def send_telegram(text: str, chat_id=news_chan):
-    # token = "ТУТ_ВАШ_ТОКЕН_КОТОРЫЙ_ВЫДАЛ_BotFather"
-    url = "https://api.telegram.org/bot"
+    # token = sets['token']
+    # url = "https://api.telegram.org/bot"
     # channel_id = "@ИМЯ_КАНАЛА"
-    url += sets['token']
-    method = url + "/sendMessage"
+    # url += sets['token']
+    # method = url + "/sendMessage"
+    method = 'https://api.telegram.org/bot{}/sendMessage'.format(sets['token'])
 
     r = requests.post(method, data={
         "chat_id": chat_id,
@@ -98,6 +100,7 @@ async def send_telegram(text: str, chat_id=news_chan):
         })
         save_bm(sets['file_cfg']['bm_path']['telegram'])
         raise Exception(r.text)
+
 
 async def save_bm(src):
     if hosting:
@@ -120,10 +123,13 @@ async def aws_s3_dupload(src, to, dl):
 
 
 async def bm(src, data=None):
-    if hosting:
-        confile = f'/tmp/{src}.json'
-    else:
-        confile = f'files/{src}.json'
+    # if hosting:
+    #     confile = f'/tmp/{src}.json'
+    # else:
+    #     confile = f'files/{src}.json'
+    
+    x = '/tmp' if hosting else 'files'
+    confile = f'{x}/{src}.json'
     
     if data:
         with open(confile, 'w+') as f:
@@ -165,12 +171,12 @@ async def making(data, link='@{}', header=True, hashtag=''):
                         msg = f'{msg}{item}'
                         i += 1
                     else:
-                        msg = f'{head}{msg}\n{head}@runewsp'
+                        msg = f'{head}{msg}\n{head}@rufeedsp'
                         new_data.append(msg)
                         i = 0
                         msg = f'{item}'
             if msg:
-                msg = f'{head}{msg}\n{head}@runewsp'
+                msg = f'{head}{msg}\n{head}@rufeedsp'
                 new_data.append(msg)
     return new_data
 

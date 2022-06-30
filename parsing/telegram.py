@@ -15,7 +15,7 @@ summ_chan = sets['summ_chan']
 
 
 async def daily(data):
-    msgs = await making(data, False, ' | #главное')
+    msgs = await making(data, False, hashtag=' | #главное')
     await sending(msgs, summ_chan)
     # run_date = datetime.now() + timedelta(minutes=10)
     # scheduler.add_job(sending,

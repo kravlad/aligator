@@ -5,12 +5,14 @@ import asyncio
 from defs import send_telegram, bm, save_bm
 from configs.storage import settings as sets
 from parsing.telegram import parsing_tg
+from parsing.intermedia import parsing_intermedia
 from parsing.kinonews import parsing_kinonews
 # from parsing.finance import fin_parsing
 
 funcs = {
     'telegram': parsing_tg,
-    'kinonews': parsing_kinonews
+    'kinonews': parsing_kinonews,
+    'intermedia': parsing_intermedia
 }
 
 def handler(event={}, context=None):
@@ -38,7 +40,8 @@ def handler(event={}, context=None):
 
 if __name__ == "__main__":
     test = {"parse": {
-                    "kinonews": [],
+                    "intermedia": [],
+                    # "kinonews": [],
         
                     # "telegram": [
                     #             "meduzalive",
