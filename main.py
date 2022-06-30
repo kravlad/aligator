@@ -5,10 +5,12 @@ import asyncio
 from defs import send_telegram, bm, save_bm
 from configs.storage import settings as sets
 from parsing.telegram import tg_parsing
+from parsing.kinonews import parsing_kinonews
 # from parsing.finance import fin_parsing
 
 funcs = {
-    'telegram': tg_parsing
+    'telegram': tg_parsing,
+    'kinonews': parsing_kinonews
 }
 
 def handler(event={}, context=None):
@@ -35,20 +37,24 @@ def handler(event={}, context=None):
 
 
 if __name__ == "__main__":
-    test = {"parse": {"telegram": [
-                                "meduzalive",
-                                "svtvnews",
-                                "theinsider",
-                                "proektproekt",
-                                "agentstvonews",
-                                "istories_media",
-                                "takiedela",
-                                "thevillagemsk",
-                                "mediazonalinks",
-                                "tvrain",
-                                "novaya_pishet",
-                                "tele_eve"
-                                ]}}
+    test = {"parse": {
+                    "kinonews": [],
+        
+                    # "telegram": [
+                    #             "meduzalive",
+    #                             "svtvnews",
+    #                             "theinsider",
+    #                             "proektproekt",
+    #                             "agentstvonews",
+    #                             "istories_media",
+    #                             "takiedela",
+    #                             "thevillagemsk",
+    #                             "mediazonalinks",
+    #                             "tvrain",
+    #                             "novaya_pishet",
+    #                             "tele_eve"
+                                # ]
+            }}
     # test = {
     #         "get_bm": {
     #             "telegram": {
@@ -70,3 +76,7 @@ if __name__ == "__main__":
     # except (KeyboardInterrupt, SystemExit):
     #         pass
     
+    # import asyncio
+    # test = asyncio.run(parsing_kinonews('kinonews'))
+
+    # print(test)

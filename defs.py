@@ -2,12 +2,16 @@ import asyncio
 import requests
 import json
 import boto3
+from bs4 import BeautifulSoup
+
 from datetime import datetime, timedelta
 from configs.storage import settings as sets
 
 news_chan = sets['news_chan']
 log_chan = sets['log_chan']
 hosting = sets['hosting']
+tg_link = sets['cfg'].links['telegram']
+
 
 async def replacing(text, replacements, spell=False):
     if text is None:
@@ -131,3 +135,43 @@ async def bm(src, data=None):
         with open(confile, 'r') as f:
             data = json.load(f)
     return data
+
+
+async def making(data, link='@{}', header=True, hashtag=''):
+    new_data = []
+    for source in data.keys():
+        source_link = link.format(source)
+        head = f'#{source} | {source_link}{hashtag}\n'
+        msg = ''
+        if data[source]:
+            i = 0
+            for n in data[source]:
+                if data[source][n]['publish']:
+                    if header:
+                        text = data[source][n]['header']
+                        soup = BeautifulSoup(text, 'html.parser').text
+                        if len(soup) > 250:
+                            text = soup[:250] + '...'
+                    else:
+                        text = data[source][n]['html_text']
+                    lnk = data[source][n]['link']
+                    item = f'\n🔹{text} / <a href="{lnk}">read</a>\n'
+                    if i <= 15:
+                        msg = f'{msg}{item}'
+                        i += 1
+                    else:
+                        msg = f'{head}{msg}\n{head}@runewsp'
+                        new_data.append(msg)
+                        i = 0
+                        msg = f'{item}'
+            if msg:
+                msg = f'{head}{msg}\n{head}@runewsp'
+                new_data.append(msg)
+    return new_data
+
+
+async def sending(msgs, chat_id=news_chan):
+    for msg in msgs:
+        await send_telegram(msg, chat_id)
+        await asyncio.sleep(3)
+

@@ -50,3 +50,53 @@ tickers = {
         }
         }
 }
+
+
+urls = {
+    'finance': {
+            'curs': 'https://www.cbr.ru/currency_base/daily/?UniDbQuery.Posted=True&UniDbQuery.To=',
+            'mets': 'https://www.cbr.ru/hd_base/metall/metall_base_new/',
+            'yahoo': 'https://finance.yahoo.com/quote/',
+            'investing': 'https://ru.investing.com/'
+    },
+    
+    'rbc': {
+            'politic': 'https://www.rbc.ru/politics/',
+            'business': 'https://www.rbc.ru/business/',
+            'economy': 'https://www.rbc.ru/economics/',
+            'fin': 'https://www.rbc.ru/finances/'
+    },
+    
+    'calend': {
+            'url': 'https://www.calend.ru/',
+            'chapts': {
+                    'holidays': 'holidays',
+                    'events': 'events',
+                    'names': 'names',
+                    'persons': 'persons'
+            }
+    },
+    
+    'musicnews': {
+        'website': 'https://www.intermedia.ru',
+        'url': '/rubrics/1'
+    },
+    
+    'kinonews': {
+        'website': 'https://www.kinonews.ru',
+        'url': '/news_p1/'
+    },
+    
+    
+    'RBCpolitic': {'url': 'https://www.rbc.ru/politics/', 'srcid': 1},
+    'RBCbusiness': {'url': 'https://www.rbc.ru/business/', 'srcid': 2},
+    'RBCeconomy': {'url': 'https://www.rbc.ru/economics/', 'srcid': 3},
+    'RBCfin': {'url': 'https://www.rbc.ru/finances/', 'srcid': 4}
+}
+
+tg_limits = {
+    'msg_lim': 4096,
+    'capt_lim': 1032,
+    'entities': 100,
+    'poll_abzac': 2
+}

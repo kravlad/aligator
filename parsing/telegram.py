@@ -5,46 +5,13 @@ from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 # from apscheduler.schedulers.asyncio import AsyncIOScheduler # pip3 install apscheduler
 
-from defs import replacing, send_telegram, bm
+from defs import replacing, send_telegram, bm, making, sending
 from configs.storage import settings as sets
 
 # scheduler = AsyncIOScheduler(daemon=True)
 tg_link = sets['cfg'].links['telegram']
 replacement = sets['cfg'].replacement['telegram']
-news_chan = sets['news_chan']
 summ_chan = sets['summ_chan']
-
-
-async def making(data, header=True, hashtag=''):
-    new_data = []
-    for source in data.keys():
-        head = f'#{source} | @{source}{hashtag}\n'
-        msg = ''
-        if data[source]:
-            i = 0
-            for n in data[source]:
-                if data[source][n]['publish']:
-                    if header:
-                        text = data[source][n]['header']
-                        soup = BeautifulSoup(text, 'html.parser').text
-                        if len(soup) > 250:
-                            text = soup[:250] + '...'
-                    else:
-                        text = data[source][n]['html_text']
-                    
-                    item = f'\n🔹{text} / <a href="{tg_link}{source}/{n}">read</a>\n'
-                    if i <= 15:
-                        msg = f'{msg}{item}'
-                        i += 1
-                    else:
-                        msg = f'{head}{msg}\n{head}'
-                        new_data.append(msg)
-                        i = 0
-                        msg = f'{item}'
-            if msg:
-                msg = f'{head}{msg}\n{head}'
-                new_data.append(msg)
-    return new_data
 
 
 async def daily(data):
@@ -58,12 +25,6 @@ async def daily(data):
     #                         timezone=config.timezone,
     #                         misfire_grace_time=60
     #                         )    
-
-
-async def sending(msgs, chat_id=news_chan):
-    for msg in msgs:
-        await send_telegram(msg, chat_id)
-        await asyncio.sleep(3)
 
 
 async def tg_parsing(sources):
@@ -110,7 +71,7 @@ async def tg_parsing(sources):
                             new_text = new_text[2:]
                         
                         header = new_text.split('\n')[0].replace('<b>', '').replace('</b>', '')
-                        data[source][msg_id] = {'msg_id': msg_id, 'publish': True, 'link': f'{tg_link}{link}', 'header': header, 'html_text': new_text}
+                        data[source][msg_id] = {'id': msg_id, 'publish': True, 'link': f'{tg_link}{link}', 'header': header, 'html_text': new_text}
                         
                         if (source == 'svtvnews' and header.startswith('Что случилось')) or \
                             (source == 'theinsider' and header.startswith('Главное за день')) or \

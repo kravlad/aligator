@@ -1,19 +1,76 @@
-if __name__ == "__main__":
-    from impdirs import insimpdirs
-    insimpdirs()
-
+import json
+import requests
 from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
-import requests
 
-import tools.mongodb as db
-import config.config as cfg
-import defs.common as common
+# import tools.mongodb as db
+import configs.config as cfg
+from defs import send_telegram, bm, making, sending
+# import defs.common as common
+
+
+
+async def parsing_kinonews(nothing):
+    source = 'kinonews'
+    bookmarks = await bm(src=source)
+    last_id = bookmarks[source]
+    website = cfg.urls[source]['website']
+
+    for k in range(2):
+        r = requests.get(website + cfg.urls[source]['url'])
+        if r.status_code != 502:
+            break
+        await asyncio.sleep(3)
+    
+    soup = BeautifulSoup(r.content, 'html.parser')
+
+    #парсим новости
+    div_container = soup.find_all('div', class_= 'anons-title-new')
+
+    i = 0
+    data = {source: {}}
+    for item in div_container:
+        link = website + item.next_element.next_element.attrs['href']
+        item_id = int(link[29:-1])
+        if last_id != item_id:
+            data[source][item_id] = {
+                        'id': item_id,
+                        'publish': True,
+                        'link': link,
+                        'html_text': item.text
+            }
+            i += 1
+        else:
+            break
+
+    if i > 0:
+        last_id = list(data[source].keys())[0]
+        await bm(src=source, data={source: last_id})
+    
+        msgs = await making(data, link='{}.ru', header=False)
+        await sending(msgs)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 async def getkino():
     head = 'kinonews'
     website = cfg.urls[head]['website']
-    lId = db.find_doc('bookmarks', {'title': head}, False)['newid']
+    with open(f'files/{head}.json', 'r') as f:
+        bm = json.load(f)
+        lId = bm[head]
 
     # Парсим события с kino.ru
     url = website + cfg.urls[head]['url']
@@ -39,12 +96,15 @@ async def getkino():
             break
 
     if i > 0:
-        try:
-            doc = {'newid': data[0]['id'], 'date': datetime.now()}
-            db.upd_doc('bookmarks', {'title': head},
-                doc, False)  # записываем id в бд
-        except:
-            pass
+        with open(f'files/{head}.json', 'w+') as f:
+            json.dump({head: int(data[0]['id'])}, f)
+
+        # try:
+        #     doc = {'newid': data[0]['id'], 'date': datetime.now()}
+        #     db.upd_doc('bookmarks', {'title': head},
+        #         doc, False)  # записываем id в бд
+        # except:
+        #     pass
     return(head, data)
 
 
@@ -53,7 +113,7 @@ async def msgkino():
     if not len(olddata):
         return
     
-    data = await common.sort_dict(olddata, 'key', '', True)
+    # data = await common.sort_dict(olddata, 'key', '', True)
     # определяем текст сообщения (заголовок и конец)
     oldmsg = '<b>Новости из мира кино:</b>\n\n'
     newmsg = ''
@@ -66,7 +126,7 @@ async def msgkino():
     i = 0
     j = 4 # начинаем счет entities
     for item in data:
-        msgitem = '📍' + '<b>' + \
+        msgitem = '🎬' + '<b>' + \
             str(data[item]['text'])[:2].replace("<", "&lt;") + '</b>' + \
             str(data[item]['text'])[2:].replace("<", "&lt;") + \
             ' <a href="' + data[item]['link'] + '">читать</a>\n'
@@ -92,9 +152,13 @@ async def msgkino():
     
 
 if __name__ == "__main__":
-    test = msgkino()
+    # test = msgkino()
     # # i = 0
     # # while i < (len(test)):
     # #     print(test[i])
     # #     i += 1
+    
+    import asyncio
+    test = asyncio.run(msgkino())
+
     print(test)
