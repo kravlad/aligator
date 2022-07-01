@@ -9,7 +9,7 @@ from parsing.kinonews import parsing_kinonews
 # from parsing.finance import fin_parsing
 # from configs.storage import settings as sets
 
-###$$$$
+###$$$$33333
 funcs = {
     'telegram': parsing_tg,
     'kinonews': parsing_kinonews,
