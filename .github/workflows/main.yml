@@ -27,7 +27,7 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: Deploy code to Lambda
-        uses: kravlad/aligator@test
+      - uses: kravlad/aligator@test
         with:
           # lambda_layer_arn: 'arn:aws:lambda:eu-central-1:222222222222:layer:layer-name'
           lambda_function_name: aligator-test
