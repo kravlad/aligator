@@ -15,6 +15,7 @@ settings = {
     'opsp_chan': os.environ.get('OPSP_CHAN'),
     'log_chan': os.environ.get('LOG_CHAN'),
     'bm_path': os.environ.get('BM_PATH'),
+    'bucket_path': os.environ.get('BUCKET_PATH'),
     'tzone': os.environ.get('TZONE'),
     # 'file_cfg': file_cfg,
     # 'cfg': cfg,

@@ -11,6 +11,7 @@ from configs.storage import settings as sets
 news_chan = sets['news_chan']
 log_chan = sets['log_chan']
 bm_path = sets['bm_path']
+bucket_path = sets['bucket_path']
 hosting = sets['hosting']
 tg_link = cfg.urls['telegram']
 pips = cfg.pips
@@ -101,7 +102,7 @@ async def send_telegram(text: str, chat_id=news_chan):
 async def save_bm(src):
     confile = f'{bm_path}{src}.json'
     if hosting:
-        await aws_s3_dupload(f'aligator/bm/{src}.json', confile, True)
+        await aws_s3_dupload(f'{bucket_path}/bm/{src}.json', confile, True)
     with open(confile, 'r') as f:
         text = f.read()
     await send_telegram(text, log_chan)
@@ -123,11 +124,11 @@ async def bm(src, data=None):
             json.dump(data, f)
         
         if hosting:
-            await aws_s3_dupload(confile, f'aligator/bm/{src}.json', False)
+            await aws_s3_dupload(confile, f'{bucket_path}/bm/{src}.json', False)
     
     else:
         if hosting:
-            await aws_s3_dupload(f'aligator/bm/{src}.json', confile, True)
+            await aws_s3_dupload(f'{bucket_path}/bm/{src}.json', confile, True)
         
         with open(confile, 'r') as f:
             data = json.load(f)
