@@ -1,3 +1,4 @@
+import os
 import json
 import boto3
 import asyncio
@@ -5,15 +6,22 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 
-import configs.config as cfg
-from configs.storage import settings as sets
+import config as cfg
 
-news_chan = sets['news_chan']
-log_chan = sets['log_chan']
-bm_path = sets['bm_path']
-hosting = sets['hosting']
+token = os.environ.get('TOKEN')
+news_chan = os.environ.get('NEWS_CHAN')
+summ_chan = os.environ.get('SUMM_CHAN')
+log_chan = os.environ.get('LOG_CHAN')
+bm_path = os.environ.get('BM_PATH')
+bucket_path = os.environ.get('BUCKET_PATH')
 tg_link = cfg.urls['telegram']
 pips = cfg.pips
+
+# opsp_chan = os.environ.get('OPSP_CHAN')
+# tzone = os.environ.get('TZONE')
+
+cwd = os.getcwd().split('/')[1]
+hosting = True if cwd == 'var' else False
 
 async def replacing(text, replacements, spell=False):
     if text is None:
@@ -76,7 +84,7 @@ async def send_telegram(text: str, chat_id=news_chan):
     # channel_id = "@ИМЯ_КАНАЛА"
     # url += sets['token']
     # method = url + "/sendMessage"
-    method = 'https://api.telegram.org/bot{}/sendMessage'.format(sets['token'])
+    method = f'https://api.telegram.org/bot{token}/sendMessage'
 
     r = requests.post(method, data={
         "chat_id": chat_id,
@@ -101,7 +109,7 @@ async def send_telegram(text: str, chat_id=news_chan):
 async def save_bm(src):
     confile = f'{bm_path}{src}.json'
     if hosting:
-        await aws_s3_dupload(f'aligator/bm/{src}.json', confile, True)
+        await aws_s3_dupload(f'{bucket_path}/bm/{src}.json', confile, True)
     with open(confile, 'r') as f:
         text = f.read()
     await send_telegram(text, log_chan)
@@ -123,23 +131,23 @@ async def bm(src, data=None):
             json.dump(data, f)
         
         if hosting:
-            await aws_s3_dupload(confile, f'aligator/bm/{src}.json', False)
+            await aws_s3_dupload(confile, f'{bucket_path}/bm/{src}.json', False)
     
     else:
         if hosting:
-            await aws_s3_dupload(f'aligator/bm/{src}.json', confile, True)
+            await aws_s3_dupload(f'{bucket_path}/bm/{src}.json', confile, True)
         
         with open(confile, 'r') as f:
             data = json.load(f)
     return data
 
 
-async def making(data, link='@{}', header=True, hashtag=''):
+async def making(data, head, header=True, hashtag=''):
     new_data = []
     for source in data.keys():
-        pip = pips.get(source, '🔹')
-        source_link = link.format(source)
-        head = f'#{source} | {source_link}{hashtag}\n'
+        pip = pips.get(source, '\n🔹')
+        # source_link = link.format(source)
+        # head = f'#{source} | {source_link}{hashtag}\n'
         msg = ''
         if data[source]:
             i = 0
@@ -153,17 +161,17 @@ async def making(data, link='@{}', header=True, hashtag=''):
                     else:
                         text = data[source][n]['html_text']
                     lnk = data[source][n]['link']
-                    item = f'\n{pip}{text} / <a href="{lnk}">read</a>\n'
+                    item = f'{pip}{text} / <a href="{lnk}">read</a>\n'
                     if i <= 15:
                         msg = f'{msg}{item}'
                         i += 1
                     else:
-                        msg = f'{head}{msg}\n{head}@rufeedsp'
+                        msg = f'{head}\n\n{msg}\n{head}\n@rufeedsp'
                         new_data.append(msg)
                         i = 0
                         msg = f'{item}'
             if msg:
-                msg = f'{head}{msg}\n{head}@rufeedsp'
+                msg = f'{head}\n\n{msg}\n{head}\n@rufeedsp'
                 new_data.append(msg)
     return new_data
 

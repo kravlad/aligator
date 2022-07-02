@@ -3,7 +3,7 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
 
-import configs.config as cfg
+import config as cfg
 from defs import bm, making, sending
 
 async def parsing_intermedia(nothing):
@@ -49,5 +49,6 @@ async def parsing_intermedia(nothing):
         sorted_data = sorted(data[source].items(), key=lambda x: x[0])
         data[source] = dict(sorted_data)
         
-        msgs = await making(data, link='{}.ru', header=False)
+        head = 'intermedia.ru | #intermedia | #музыка'
+        msgs = await making(data, head=head, header=False)
         await sending(msgs)

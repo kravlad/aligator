@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 
 # import tools.mongodb as db
-import configs.config as cfg
+import config as cfg
 from defs import bm, making, sending
 # import defs.common as common
 
@@ -49,6 +49,7 @@ async def parsing_kinonews(nothing):
         sorted_data = sorted(data[source].items(), key=lambda x: x[0])
         data[source] = dict(sorted_data)
         
-        msgs = await making(data, link='{}.ru', header=False)
+        head = 'kinonews.ru | #kinonews | #кино'
+        msgs = await making(data, head=head, header=False)
         await sending(msgs)
     
