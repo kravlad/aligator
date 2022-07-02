@@ -41,9 +41,9 @@ def handler(event={}, context=None):
 
 
 if __name__ == "__main__":
-    # test = {"parse": {"intermedia": []}}
+    test = {"parse": {"intermedia": []}}
     # test = {"parse": {"kinonews": []}}
-    test = {"parse": {"calend": []}}
+    # test = {"parse": {"calend": []}}
     # test = {"parse": {"telegram": [
                                 # "meduzalive",
                                 # "svtvnews",
