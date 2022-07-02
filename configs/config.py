@@ -102,5 +102,10 @@ pips = {
     'telegram': '🔹',
     'kinonews': '🎬',
     'intermedia': '🎵',
-    
+    'holidays': '🎈',
+    'thisDay': '⏳',
+    'events': '📆',
+    'births': '🎂',
+    'mourns': '☠️',
+
 }

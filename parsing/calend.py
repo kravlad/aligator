@@ -12,6 +12,13 @@ str_date = '{}-{}-{}'.format(date.year, date.month, date.day)
 pages = ['holidays','events']
 pips = cfg.pips
 
+xxx = {
+    'holidays': 'Праздники',
+    'thisDay': 'Также в этот день',
+    'events': 'События',
+    'births': 'В этот день родились',
+    'mourns': 'День памяти',
+}
 
 # pages = ['events']
 
@@ -86,22 +93,32 @@ async def parsing_persons():
 
 
 async def making(data):
-    new_data = []
+    x = 'events'
+    head = f'#календарь | calend.ru'
+    msg = ''
     for src in data.keys():
         pip = pips.get(src, '🔹')
-        head = f'#calend | calend.ru\n\n{src}:'
-        msg = ''
+        h2 = xxx[src]
+        msg = f'{msg}\n\n{h2}:'
         if data[src]:
             i = 0
             for n in data[src]:
-                text = data[src][n]['text']
                 lnk = data[src][n]['link']
-                item = f'\n{pip}{text} / <a href="{lnk}">read</a>'
+                text = data[src][n]['text']
+                l_text = text.split()
+                if src in ['births','mourns']:
+                    t1 = l_text[0]
+                    t2 = l_text[2]
+                    t3 = ' '.join(l_text[3:])
+                    item = f'\n{pip}<a href="{lnk}">{t1}</a> - <a href="{lnk}">{t2}</a> {t3}'
+                else:
+                    t1 = l_text[0]
+                    t2 = ' '.join(l_text[1:])
+                    item = f'\n{pip}<a href="{lnk}">{t1}</a> {t2}'
                 msg = f'{msg}{item}'
-            if msg:
-                msg = f'{head}{msg}\n{head}@rusmsp'
-                new_data.append(msg)
-    return new_data
+    if msg:
+        msg = f'\n\n{head}{msg}\n\n{head}\n@rusmsp'
+    return msg
 
 
 async def parsing_calend(nothing):
