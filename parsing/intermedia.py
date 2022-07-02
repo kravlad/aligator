@@ -3,7 +3,7 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
 
-import configs.config as cfg
+import config as cfg
 from defs import bm, making, sending
 
 async def parsing_intermedia(nothing):

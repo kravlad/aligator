@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 
-import configs.config as cfg
+import config as cfg
 from defs import sending
 
 source = 'calend'

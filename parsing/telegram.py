@@ -5,14 +5,12 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 # from apscheduler.schedulers.asyncio import AsyncIOScheduler # pip3 install apscheduler
 
-import configs.config as cfg
-from configs.storage import settings as sets
-from defs import replacing, send_telegram, bm, making, sending
+import config as cfg
+from defs import summ_chan, replacing, send_telegram, bm, making, sending
 
 # scheduler = AsyncIOScheduler(daemon=True)
 tg_link = cfg.urls['telegram']
 replacement = cfg.replacement['telegram']
-summ_chan = sets['summ_chan']
 
 
 async def daily(data):

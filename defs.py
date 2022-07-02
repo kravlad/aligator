@@ -1,3 +1,4 @@
+import os
 import json
 import boto3
 import asyncio
@@ -5,16 +6,23 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 
-import configs.config as cfg
+import config as cfg
 from configs.storage import settings as sets
 
-news_chan = sets['news_chan']
-log_chan = sets['log_chan']
-bm_path = sets['bm_path']
-bucket_path = sets['bucket_path']
-hosting = sets['hosting']
+token = os.environ.get('TOKEN')
+news_chan = os.environ.get('NEWS_CHAN')
+summ_chan = os.environ.get('SUMM_CHAN')
+log_chan = os.environ.get('LOG_CHAN')
+bm_path = os.environ.get('BM_PATH')
+bucket_path = os.environ.get('BUCKET_PATH')
 tg_link = cfg.urls['telegram']
 pips = cfg.pips
+
+# opsp_chan = os.environ.get('OPSP_CHAN')
+# tzone = os.environ.get('TZONE')
+
+cwd = os.getcwd().split('/')[1]
+hosting = True if cwd == 'var' else False
 
 async def replacing(text, replacements, spell=False):
     if text is None:
@@ -77,7 +85,7 @@ async def send_telegram(text: str, chat_id=news_chan):
     # channel_id = "@ИМЯ_КАНАЛА"
     # url += sets['token']
     # method = url + "/sendMessage"
-    method = 'https://api.telegram.org/bot{}/sendMessage'.format(sets['token'])
+    method = f'https://api.telegram.org/bot{token}/sendMessage'
 
     r = requests.post(method, data={
         "chat_id": chat_id,
