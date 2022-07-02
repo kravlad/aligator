@@ -5,12 +5,13 @@ from datetime import datetime, timedelta
 import configs.config as cfg
 from defs import sending
 
-
 source = 'calend'
 website = cfg.urls[source]['url']
 date = datetime.now() # + timedelta(hours=10)
 str_date = '{}-{}-{}'.format(date.year, date.month, date.day)
 pages = ['holidays','events']
+pips = cfg.pips
+
 
 # pages = ['events']
 
@@ -85,8 +86,22 @@ async def parsing_persons():
 
 
 async def making(data):
-    pass
-    return data
+    new_data = []
+    for src in data.keys():
+        pip = pips.get(src, '🔹')
+        head = f'#calend | calend.ru\n\n{src}:'
+        msg = ''
+        if data[src]:
+            i = 0
+            for n in data[src]:
+                text = data[src][n]['text']
+                lnk = data[src][n]['link']
+                item = f'\n{pip}{text} / <a href="{lnk}">read</a>'
+                msg = f'{msg}{item}'
+            if msg:
+                msg = f'{head}{msg}\n{head}@rusmsp'
+                new_data.append(msg)
+    return new_data
 
 
 async def parsing_calend(nothing):
