@@ -6,13 +6,15 @@ from defs import bm, save_bm
 from parsing.telegram import parsing_tg
 from parsing.intermedia import parsing_intermedia
 from parsing.kinonews import parsing_kinonews
+from parsing.calend import parsing_calend
 # from parsing.finance import fin_parsing
 # from configs.storage import settings as sets
 
 funcs = {
     'telegram': parsing_tg,
     'kinonews': parsing_kinonews,
-    'intermedia': parsing_intermedia
+    'intermedia': parsing_intermedia,
+    'calend': parsing_calend,
 }
 
 def handler(event={}, context=None):
@@ -41,9 +43,10 @@ def handler(event={}, context=None):
 if __name__ == "__main__":
     # test = {"parse": {"intermedia": []}}
     # test = {"parse": {"kinonews": []}}
-    test = {"parse": {"telegram": [
-                                "meduzalive",
-    #                             "svtvnews",
+    test = {"parse": {"calend": []}}
+    # test = {"parse": {"telegram": [
+                                # "meduzalive",
+                                # "svtvnews",
     #                             "theinsider",
     #                             "proektproekt",
     #                             "agentstvonews",
@@ -54,7 +57,7 @@ if __name__ == "__main__":
     #                             "tvrain",
     #                             "novaya_pishet",
     #                             "tele_eve"
-                                ]}}
+                                # ]}}
     # test = {"get_bm": {"telegram": {
     #                 "meduzalive": 63275,
     #                 "svtvnews": 10410

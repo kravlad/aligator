@@ -5,7 +5,7 @@ from datetime import datetime
 
 # import tools.mongodb as db
 import configs.config as cfg
-from defs import send_telegram, bm, making, sending
+from defs import bm, making, sending
 # import defs.common as common
 
 

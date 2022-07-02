@@ -4,8 +4,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 
 import configs.config as cfg
-from defs import send_telegram, bm, making, sending
-
+from defs import bm, making, sending
 
 async def parsing_intermedia(nothing):
     source = 'intermedia'

@@ -32,6 +32,7 @@ async def parsing_tg(sources):
     bookmarks = await bm(src='telegram')
     # sources = list(bookmarks.keys())
     data = {}
+    j = 0
     for source in sources:
         # print(source)
         for k in range(2):
@@ -90,10 +91,12 @@ async def parsing_tg(sources):
         if m_ids:
             # print(m_ids[0], ' - ', m_ids[-1])
             if all_ids[0] > last_id:
-                sources.append(f'{source}?before={m_ids[0]}')
+                sources.insert(j + 1, f'{source}?before={m_ids[0]}')
+                # sources.append(f'{source}?before={m_ids[0]}')
             else:
                 bookmarks['bookmarks'][source] = m_ids[-1]
             
+        j += 1
         await asyncio.sleep(3)
     
     bookmarks['date'] = str(datetime.now())

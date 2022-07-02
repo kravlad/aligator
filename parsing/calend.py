@@ -1,184 +1,140 @@
-if __name__ == "__main__":
-    from impdirs import insimpdirs
-    insimpdirs()
-
-from datetime import datetime, timedelta
-from bs4 import BeautifulSoup
 import requests
-import time
+from bs4 import BeautifulSoup
+from datetime import datetime, timedelta
 
-import config.config as cfg
+import configs.config as cfg
+from defs import sending
 
-# import pandas as pd # pip3 install pandas
-# import openpyxl # pip3 install openpyxl
+source = 'calend'
+website = cfg.urls[source]['url']
+date = datetime.now() # + timedelta(hours=10)
+str_date = '{}-{}-{}'.format(date.year, date.month, date.day)
+pages = ['holidays','events']
+pips = cfg.pips
 
-async def parse_ev(table):#Функция разбора таблицы с вопросом
-    # res = pd.DataFrame()
-    
-    year = ''
-    title = ''
-    category = ''
+xxx = {
+    'holidays': 'Праздники',
+    'thisDay': 'Также в этот день',
+    'events': 'События',
+    'births': 'В этот день родились',
+    'mourns': 'День памяти',
+}
 
-    try:
-        year = table.find('span', {'class': 'year'}).text
-    except AttributeError:
-        pass
+# pages = ['events']
 
-    title = table.find('span', {'class': 'title'}).text
+async def parsing_events():    
+    data = {}
+    for i in pages:
+        for k in range(2):
+            r = requests.get(f'{website}/{i}/{str_date}')
+            if r.status_code != 502:
+                break
+            await asyncio.sleep(3)
 
-    try:
-        category = table.find('div', {'class': 'link'}).text
-    except AttributeError:
-        pass
-
-    x = {
-        'year': year, 
-        'title': title, 
-        'category': category
-    }
-    # res=res.append(pd.DataFrame([[etype, year, title, category]], columns = ['type', 'date', 'title', 'category']), ignore_index=True)
-    return x
-
-
-async def parse_person(table):#Функция разбора таблицы с вопросом
-    # res = pd.DataFrame()
-    
-    byear = ''
-    dyear = ''
-    title = ''
-    category = ''
-
-    byear = table.find('span', {'class': 'year'}).text
-    try:
-        dyear = table.find('span', {'class': 'year2'}).text
-    except AttributeError:
-        pass
-
-    title = table.find('span', {'class': 'title'}).text
-
-    # try:
-    #     category = table.find('div', {'class': 'link'}).text
-    # except AttributeError:
-    #     pass
-    if dyear == '':
-        year = byear
-    else:
-        year = byear + ' - ' + dyear
-    
-    x = {
-        'year': year, 
-        'title': title, 
-        'category': category
-    }
-    # res=res.append(pd.DataFrame([[etype, year, title, category]], columns = ['type', 'date', 'title', 'category']), ignore_index=True)
-    return x
-
-
-async def getcalendev():
-    # result = pd.DataFrame()
-    # table = []
-    now = datetime.now() + timedelta(hours=10)
-    date = now.strftime('%d.%m.%Y')
-    wd = cfg.weekday[int(now.strftime('%w'))]
-
-    date = str(now.strftime('%m')) + '-' + str(now.strftime('%d'))
-
-    # Парсим события с calend.ru
-    url = cfg.url_calend + cfg.holidays + '/' + date
-    r = requests.get(url)
-    soup = BeautifulSoup(r.content, 'html.parser')
-
-    #парсим праздики
-    div_container = soup.find('div', class_='block holidays')
-    data = {'holydays': {}}
-    # Then search in that div_container for all p tags with class "hello"
-    i = 0
-    for ptag in div_container.find_all('li', class_='three-three'):
-        res = await parse_ev(ptag)
-        data['holydays'][i] = res
-        # result = result.append(res, ignore_index=True)
-        i += 1
-
-    #парсим а также в этот день
-    div_container = soup.find('div', class_='block thisDay')
-
-    data['thisday'] = {}
-    # Then search in that div_container for all p tags with class "hello"
-    try:
-        i = 0
-        for ptag in div_container.find_all('li', class_='three-three'):
-            res = await parse_ev(ptag)
-            data['thisday'][i] = res
-            i += 1
-            # result = result.append(res, ignore_index=True)
-    except:
-        pass
-
-    time.sleep(3)
-    #парсим хронику
-    url = cfg.url_calend + cfg.events + '/' + date
-    r = requests.get(url)
-    soup = BeautifulSoup(r.content, 'html.parser')
-
-    div_container = soup.find('ul', class_='itemsNet')
-    
-    data['events'] = {}
-    # Then search in that div_container for all p tags with class "hello"
-    i = 0
-    for ptag in div_container.find_all('li', class_='three-three'):
-        res = await parse_ev(ptag)
-        data['events'][i] = res
-        i += 1
-        # result = result.append(res, ignore_index=True)
-
+        text = r.text
+        chapts = text.split('itemsNet')
+        data[i] = {}
+        k = 0
+        for j in chapts[1:]:
+            items = j.split('three-three')
+            for item in items[1:]:
+                text = ''
+                if i == 'events':
+                    start = item.find('caption') + 5
+                    start = item.find('year', start) + 7
+                    end = item.find('<', start)
+                    text = item[start:end] + ' - '
+                
+                start = item.find('title') + 5
+                start = item.find('<a href=', start) + 9
+                end = item.find('>', start) - 1
+                link = item[start:end]
+                
+                start = end + 2
+                end = item.find('</a>', start)
+                text = text + item[start:end]
+                data[i][k] = {
+                    'link': link,
+                    'text': text
+                }
+                k += 1
     return data
 
 
-async def getcalendpers():
-    # result = pd.DataFrame()
-    # table = []
-    now = datetime.now() + timedelta(hours=10)
-    date = now.strftime('%d.%m.%Y')
-    wd = cfg.weekday[int(now.strftime('%w'))]
-
-    date = str(now.strftime('%m')) + '-' + str(now.strftime('%d'))
-
-    time.sleep(3)
-    #парсим ДР
-    url = cfg.url_calend + cfg.persons + '/' + date
-    r = requests.get(url)
+async def parsing_persons():
+    for k in range(2):
+        r = requests.get(f'{website}/persons/{str_date}')
+        if r.status_code != 502:
+            break
+        await asyncio.sleep(3)
+    
     soup = BeautifulSoup(r.content, 'html.parser')
-
-    div_container = soup.find('ul', class_='itemsNet')
-
-    data = {'born': {}}
-    # Then search in that div_container for all p tags with class "hello"
-    i = 0
-    for ptag in div_container.find_all('li', class_='one-four birth'):
-        res = await parse_person(ptag)
-        data['born'][i] = res
-        i += 1
-        # result = result.append(res, ignore_index=True)
-
-    time.sleep(3)
-    #парсим годовщины
-    url = cfg.url_calend + cfg.persons + '/' + date
-    r = requests.get(url)
-    soup = BeautifulSoup(r.content, 'html.parser')
-
-    div_container = soup.find('ul', class_='itemsNet')
-
-    data['died'] = {}
-    # Then search in that div_container for all p tags with class "hello"
-    i = 0
-    for ptag in div_container.find_all('li', class_='one-four mourn'):
-        res = await parse_person(ptag)
-        data['died'][i] = res
-        i += 1
-        # result = result.append(res, ignore_index=True)
-
-    # result.to_excel('result.xlsx')
+    births = soup.find_all('li', class_='one-four birth')
+    mourns = soup.find_all('li', class_='one-four mourn')
+    chapts = {'births': births, 'mourns': mourns}
+    
+    data = {}
+    for i in chapts:
+        chapt = chapts[i]
+        data[i] = {}
+        j = 0
+        for k in chapt:
+            tmp = k.find('span', {'class': 'title'})
+            link = tmp.contents[0].attrs['href']
+            title = tmp.text
+            b_year = k.find('span', {'class': 'year'}).text
+            tmp = k.find('span', {'class': 'year2'})
+            d_year = tmp.text if tmp else ''
+        
+            data[i][j] = {'link': link,
+                            'text': f'{b_year} - {d_year} {title}'}
+            j += 1
     return data
+
+
+async def making(data):
+    x = 'events'
+    head = f'#календарь | calend.ru'
+    msg = ''
+    for src in data.keys():
+        pip = pips.get(src, '🔹')
+        h2 = xxx[src]
+        msg = f'{msg}\n\n{h2}:'
+        if data[src]:
+            i = 0
+            for n in data[src]:
+                lnk = data[src][n]['link']
+                text = data[src][n]['text']
+                l_text = text.split()
+                if src in ['births','mourns']:
+                    t1 = l_text[0]
+                    t2 = l_text[2]
+                    t3 = ' '.join(l_text[3:])
+                    item = f'\n{pip}<a href="{lnk}">{t1}</a> - <a href="{lnk}">{t2}</a> {t3}'
+                else:
+                    t1 = l_text[0]
+                    t2 = ' '.join(l_text[1:])
+                    item = f'\n{pip}<a href="{lnk}">{t1}</a> {t2}'
+                msg = f'{msg}{item}'
+    if msg:
+        msg = f'\n\n{head}{msg}\n\n{head}\n@rusmsp'
+    return msg
+
+
+async def parsing_calend(nothing):
+    funcs = [parsing_events, parsing_persons]
+    msgs = []
+    for f in funcs:
+        data = await f()
+        msg = await making(data)
+        msgs.append(msg)
+    await sending(msgs)
+
+
+
+
+
+
 
 
 async def msgcalev():

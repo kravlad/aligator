@@ -64,7 +64,7 @@ urls = {
     },
     
     'calend': {
-            'url': 'https://www.calend.ru/',
+            'url': 'https://www.calend.ru',
             'chapts': {
                     'holidays': 'holidays',
                     'events': 'events',
@@ -102,5 +102,10 @@ pips = {
     'telegram': '🔹',
     'kinonews': '🎬',
     'intermedia': '🎵',
-    
+    'holidays': '🎈',
+    'thisDay': '⏳',
+    'events': '📆',
+    'births': '🎂',
+    'mourns': '☠️',
+
 }
