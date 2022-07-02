@@ -99,7 +99,7 @@ tg_limits = {
 
 
 pips = {
-    'telegram': '🔹',
+    'telegram': '\n🔹',
     'kinonews': '🎬',
     'intermedia': '🎵',
     'holidays': '🎈',

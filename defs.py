@@ -145,7 +145,7 @@ async def bm(src, data=None):
 async def making(data, head, header=True, hashtag=''):
     new_data = []
     for source in data.keys():
-        pip = pips.get(source, '🔹')
+        pip = pips.get(source, '\n🔹')
         # source_link = link.format(source)
         # head = f'#{source} | {source_link}{hashtag}\n'
         msg = ''
