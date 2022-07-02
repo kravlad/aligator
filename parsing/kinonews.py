@@ -49,6 +49,7 @@ async def parsing_kinonews(nothing):
         sorted_data = sorted(data[source].items(), key=lambda x: x[0])
         data[source] = dict(sorted_data)
         
-        msgs = await making(data, link='{}.ru', header=False)
+        head = 'kinonews.ru | #kinonews | #кино'
+        msgs = await making(data, head=head, header=False)
         await sending(msgs)
     

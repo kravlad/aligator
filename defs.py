@@ -7,7 +7,6 @@ from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 
 import config as cfg
-from configs.storage import settings as sets
 
 token = os.environ.get('TOKEN')
 news_chan = os.environ.get('NEWS_CHAN')
@@ -143,12 +142,12 @@ async def bm(src, data=None):
     return data
 
 
-async def making(data, link='@{}', header=True, hashtag=''):
+async def making(data, head, header=True, hashtag=''):
     new_data = []
     for source in data.keys():
         pip = pips.get(source, '🔹')
-        source_link = link.format(source)
-        head = f'#{source} | {source_link}{hashtag}\n'
+        # source_link = link.format(source)
+        # head = f'#{source} | {source_link}{hashtag}\n'
         msg = ''
         if data[source]:
             i = 0
@@ -162,17 +161,17 @@ async def making(data, link='@{}', header=True, hashtag=''):
                     else:
                         text = data[source][n]['html_text']
                     lnk = data[source][n]['link']
-                    item = f'\n{pip}{text} / <a href="{lnk}">read</a>\n'
+                    item = f'{pip}{text} / <a href="{lnk}">read</a>\n'
                     if i <= 15:
                         msg = f'{msg}{item}'
                         i += 1
                     else:
-                        msg = f'{head}{msg}\n{head}@rufeedsp'
+                        msg = f'{head}\n\n{msg}\n{head}\n@rufeedsp'
                         new_data.append(msg)
                         i = 0
                         msg = f'{item}'
             if msg:
-                msg = f'{head}{msg}\n{head}@rufeedsp'
+                msg = f'{head}\n\n{msg}\n{head}\n@rufeedsp'
                 new_data.append(msg)
     return new_data
 

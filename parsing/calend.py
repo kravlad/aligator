@@ -92,9 +92,8 @@ async def parsing_persons():
     return data
 
 
-async def making(data):
-    x = 'events'
-    head = f'#календарь | calend.ru'
+async def making(data, hashtag):
+    head = f'calend.ru | #календарь | #{hashtag}'
     msg = ''
     for src in data.keys():
         pip = pips.get(src, '🔹')
@@ -110,83 +109,25 @@ async def making(data):
                     t1 = l_text[0]
                     t2 = l_text[2]
                     t3 = ' '.join(l_text[3:])
-                    item = f'\n{pip}<a href="{lnk}">{t1}</a> - <a href="{lnk}">{t2}</a> {t3}'
+                    item = f'{pip}<a href="{lnk}">{t1}</a> - <a href="{lnk}">{t2}</a> {t3}\n'
                 else:
                     t1 = l_text[0]
                     t2 = ' '.join(l_text[1:])
                     item = f'\n{pip}<a href="{lnk}">{t1}</a> {t2}'
                 msg = f'{msg}{item}'
     if msg:
-        msg = f'\n\n{head}{msg}\n\n{head}\n@rusmsp'
+        msg = f'\n\n{head}{msg}\n{head}\n@rusmsp'
     return msg
 
 
 async def parsing_calend(nothing):
-    funcs = [parsing_events, parsing_persons]
+    funcs = {1: {'f': parsing_events, 
+                'h1': 'события'},
+            2: {'f': parsing_persons,
+                'h1': 'персоны'}}
     msgs = []
     for f in funcs:
-        data = await f()
-        msg = await making(data)
+        data = await funcs[f]['f']()
+        msg = await making(data, funcs[f]['h1'])
         msgs.append(msg)
     await sending(msgs)
-
-
-
-
-
-
-
-
-async def msgcalev():
-    text = await getcalendev()
-    now = datetime.now() + timedelta(hours=10)
-    date = now.strftime('%d.%m.%Y')
-    wd = cfg.weekday[int(now.strftime('%w'))]
-    head = 'Calend Events'
-
-    msg = '<b>Календарь событий на сегодня:</b>\n' + wd + ', ' + date + '\n\nПраздники:'
-    for i in text['holydays']:
-        msg = msg + '\n' + '📍<b>' + text['holydays'][i]['title'][:2].replace("<", "&lt;") + '</b>' + \
-                                    text['holydays'][i]['title'][2:].replace("<", "&lt;")
-    
-    msg = msg + '\n\nЗнаменательные события:'
-    for i in text['events']:
-        msg = msg + '\n' + '📍' + text['events'][i]['year'] + ' ' + \
-                                    text['events'][i]['title'].replace("<", "&lt;")
-    
-    msg = msg + '\n\nИсточник: calend.ru' + '\n\n#<b>календарь</b> #calend #праздники #сводка' + cfg.bot_msg_tail
-    msgdata = {0: msg}
-    
-    # i = 0
-    # while i < len(text['type']):
-    #     if text['type'][i] == 'Thisday':
-    #         msg = msg + '\n' + text['title'][i]
-    #     i += 1
-    return msgdata
-
-
-async def msgcalpers():
-    text = await getcalendpers()
-    now = datetime.now() + timedelta(hours=10)
-    date = now.strftime('%d.%m.%Y')
-    wd = cfg.weekday[int(now.strftime('%w'))]
-    head = 'Calend Persons'
-
-    msg = '<b>Календарь событий на сегодня:</b>\n' + wd + ', ' + date + '\n\nВ этот день родились:'
-    for i in text['born']:
-        msg = msg + '\n' + '📍' + text['born'][i]['year'] + ' ' + \
-                                    text['born'][i]['title'].replace("<", "&lt;")
-    
-    msg = msg + '\n\nДень памяти:'
-    for i in text['died']:
-        msg = msg + '\n' + '📍' + text['died'][i]['year'] + ' ' + \
-                                    text['died'][i]['title'].replace("<", "&lt;")
-    
-    msg = msg + '\n\nИсточник: calend.ru' + '\n\n#<b>календарь</b> #calend #именины #сводка' + cfg.bot_msg_tail
-    msgdata = {0: msg}
-    return msgdata
-
-
-if __name__ == "__main__":
-    test = msgcalev()
-    print(test)

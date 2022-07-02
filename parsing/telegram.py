@@ -13,8 +13,8 @@ tg_link = cfg.urls['telegram']
 replacement = cfg.replacement['telegram']
 
 
-async def daily(data):
-    msgs = await making(data, header=False, hashtag=' | #главное')
+async def daily(data, head):
+    msgs = await making(data, head=head, header=False, hashtag=' | #главное')
     await sending(msgs, summ_chan)
     # run_date = datetime.now() + timedelta(minutes=10)
     # scheduler.add_job(sending,
@@ -78,7 +78,8 @@ async def parsing_tg(sources):
                             (source == 'tele_eve' and '#картинадня' in html_text) or \
                             (source == 'tele_eve' and '#главноезаночь' in html_text):
                             
-                            await daily({source: {msg_id: data[source][msg_id]}})
+                            head = '@{source} | #{source} | #главное\n'
+                            await daily({source: {msg_id: data[source][msg_id]}}, head)
                             data[source][msg_id]['publish'] = False
         
         sorted_tuple = sorted(data[source].items(), key=lambda x: x[0])
@@ -103,5 +104,6 @@ async def parsing_tg(sources):
     if data.get('tele_eve'):
         data.pop('tele_eve')
     
-    msgs = await making(data)
+    head = '@{source} | #{source} | #новости'
+    msgs = await making(data, head)
     await sending(msgs)
