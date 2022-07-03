@@ -47,8 +47,9 @@ if __name__ == "__main__":
     #                     "business": ["business"],
     #                     "politic": ["politic"]
     #         }}}
-    # test = {"parse": {"kinonews": []}}
-    test = {"parse": {"calend": []}}
+    test = {"parse": {"kinonews": []}}
+    # test = {"parse": {"calend": []}}
+>>>>>>> local
     # test = {"parse": {"telegram": [
     #                             "meduzalive",
     #                             "svtvnews",
