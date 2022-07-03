@@ -7,10 +7,5 @@ from datetime import datetime, timedelta
 # print(dict(region))
 # print(region.get('TOKEN'))
 
-x = ['10','20','30','40','50']
-# x.insert(3, 5)
-
-y = ' '.join(x[1:])
-
-
-print(y)
+x = [0, -1, -2, -3]
+print(x['-1'])

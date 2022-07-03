@@ -1,14 +1,53 @@
-if __name__ == "__main__":
-    from impdirs import insimpdirs
-    insimpdirs()
-
+import requests
 from datetime import datetime, timedelta
 from bs4 import BeautifulSoup # pip3 install bs4
-import requests
 
-import config.config as cfg
-import tools.mongodb as db
-import defs.common as common
+import config as cfg
+from defs import bm, making, sending
+
+async def parsing_rbc_business(nothing):
+    source = 'rbc_business'
+    bookmarks = await bm(src=source)
+    last_id = bookmarks['bookmarks'][source]
+    website = cfg.urls['rbc'][source]
+
+    for k in range(2):
+        r = requests.get(website)
+        if r.status_code != 502:
+            break
+        await asyncio.sleep(3)
+    
+    soup = BeautifulSoup(r.content, 'html.parser')
+    content = soup.find_all('span', itemprop='itemListElement')
+    data = {source: {}}
+    for i in content:
+        n = int(i.contents[1].attrs['content']) * -1
+        link = i.contents[3].attrs['content']
+        item_id = link.split('/')[-1]
+        if last_id != item_id:
+            data[source][n] = {
+                                'id': item_id,
+                                'publish': True,
+                                'link': link,
+                                'html_text': i.contents[5].attrs['content']
+            }
+        else:
+            break
+
+    if len(data[source]) > 0:
+        last_id = data[source][-1]['id']
+        await bm(src=source, data={'date': str(datetime.now()), 'bookmarks': {source: last_id}})
+    
+        sorted_data = sorted(data[source].items(), key=lambda x: x[0])
+        data[source] = dict(sorted_data)
+        
+        head = 'rbc.ru | #рбк | #бизнес'
+        msgs = await making(data, head=head, header=False)
+        await sending(msgs)
+
+
+
+
 
 async def getrbcbusiness():
     # получаем id последней новости
@@ -21,7 +60,7 @@ async def getrbcbusiness():
     soup = BeautifulSoup(r.content, 'html.parser')
 
     # парсим новости
-    content = soup.find('div', class_='l-row js-load-container')
+    content = soup.find('div', class_='itemListElement')
     i = 0
     j = 0
     k = 0

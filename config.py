@@ -55,10 +55,10 @@ urls = {
             'yahoo': 'https://finance.yahoo.com/quote/',
             'investing': 'https://ru.investing.com/'
     },
-    
+    'rbc_business': 'https://www.rbc.ru/business/',
     'rbc': {
             'politic': 'https://www.rbc.ru/politics/',
-            'business': 'https://www.rbc.ru/business/',
+            'rbc_business': 'https://www.rbc.ru/business/',
             'economy': 'https://www.rbc.ru/economics/',
             'fin': 'https://www.rbc.ru/finances/'
     },
