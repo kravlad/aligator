@@ -1,17 +1,12 @@
 import requests
-from datetime import datetime, timedelta
+from datetime import datetime
 from bs4 import BeautifulSoup # pip3 install bs4
 
 import config as cfg
 from defs import bm, making, sending
 
 async def parsing_rbc(sources):
-    # sources = {'finec': ['economy','finance'],
-    #         'business': ['business'],
-    #         'politic': ['politic']
-    #         }
     data = {}
-    conts = []
     for source in sources.keys():
         j = 0
         data = {source: {}}
@@ -46,7 +41,6 @@ async def parsing_rbc(sources):
                 else:
                     break
                 l += 1
-            
         
         if j < 0:
             bookmarks[chapt]['date'] = str(datetime.now())
