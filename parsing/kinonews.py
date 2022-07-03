@@ -8,7 +8,6 @@ import config as cfg
 from defs import bm, making, sending
 # import defs.common as common
 
-
 async def parsing_kinonews(nothing):
     source = 'kinonews'
     bookmarks = await bm(src=source)
@@ -22,8 +21,6 @@ async def parsing_kinonews(nothing):
         await asyncio.sleep(3)
     
     soup = BeautifulSoup(r.content, 'html.parser')
-
-    #парсим новости
     div_container = soup.find_all('div', class_= 'anons-title-new')
 
     i = 0

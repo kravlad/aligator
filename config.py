@@ -55,21 +55,21 @@ urls = {
             'yahoo': 'https://finance.yahoo.com/quote/',
             'investing': 'https://ru.investing.com/'
     },
-    'rbc_business': 'https://www.rbc.ru/business/',
     'rbc': {
             'politic': 'https://www.rbc.ru/politics/',
-            'rbc_business': 'https://www.rbc.ru/business/',
+            'business': 'https://www.rbc.ru/business/',
             'economy': 'https://www.rbc.ru/economics/',
-            'fin': 'https://www.rbc.ru/finances/'
+            'finance': 'https://www.rbc.ru/finances/'
     },
     
     'calend': {
             'url': 'https://www.calend.ru',
             'chapts': {
-                    'holidays': 'holidays',
-                    'events': 'events',
-                    'names': 'names',
-                    'persons': 'persons'
+                        'holidays': 'Праздники',
+                        'thisDay': 'Также в этот день',
+                        'events': 'События',
+                        'births': 'В этот день родились',
+                        'mourns': 'День памяти',
             }
     },
     
@@ -81,13 +81,7 @@ urls = {
     'kinonews': {
         'website': 'https://www.kinonews.ru',
         'url': '/news_p1/'
-    },
-    
-    
-    'RBCpolitic': {'url': 'https://www.rbc.ru/politics/', 'srcid': 1},
-    'RBCbusiness': {'url': 'https://www.rbc.ru/business/', 'srcid': 2},
-    'RBCeconomy': {'url': 'https://www.rbc.ru/economics/', 'srcid': 3},
-    'RBCfin': {'url': 'https://www.rbc.ru/finances/', 'srcid': 4}
+    }
 }
 
 tg_limits = {

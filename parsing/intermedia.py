@@ -41,7 +41,6 @@ async def parsing_intermedia(nothing):
             else:
                 break
     
-    
     if k < 0:
         last_id = data[source][0]['id']
         await bm(src=source, data={'date': str(datetime.now()), 'bookmarks': {source: last_id}})

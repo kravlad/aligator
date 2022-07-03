@@ -58,7 +58,7 @@ async def parsing_calend(nothing):
                 if r.status_code != 502:
                     break
                 await asyncio.sleep(3)
-
+                
             soup = BeautifulSoup(r.content, 'html.parser')
             if page == 'holidays':
                 holidays = soup.find_all('div', class_='block holidays')[0]
