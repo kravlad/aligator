@@ -5,20 +5,12 @@ from datetime import datetime, timedelta
 import config as cfg
 from defs import sending
 
-source = 'calend'
-website = cfg.urls[source]['url']
+website = cfg.urls['calend']['url']
 date = datetime.now() # + timedelta(hours=10)
 str_date = '{}-{}-{}'.format(date.year, date.month, date.day)
-pages = [['holidays','events'],['persons']]
 pips = cfg.pips
-
-xxx = {
-    'holidays': 'Праздники',
-    'thisDay': 'Также в этот день',
-    'events': 'События',
-    'births': 'В этот день родились',
-    'mourns': 'День памяти',
-}
+xxx = cfg.urls['calend']['chapts']
+pages = [['holidays','events'],['persons']]
 
 async def making(data, hashtag):
     head = f'calend.ru | #календарь | #{hashtag}\n'

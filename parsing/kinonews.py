@@ -49,4 +49,3 @@ async def parsing_kinonews(nothing):
         head = 'kinonews.ru | #kinonews | #кино'
         msgs = await making(data, head=head, header=False)
         await sending(msgs)
-    

@@ -1,6 +1,5 @@
 import asyncio
 # from apscheduler.schedulers.asyncio import AsyncIOScheduler # pip3 install apscheduler
-# import json
 
 from defs import bm, save_bm
 from parsing.telegram import parsing_tg
@@ -9,7 +8,6 @@ from parsing.kinonews import parsing_kinonews
 from parsing.calend import parsing_calend
 from parsing.rbc import parsing_rbc
 # from parsing.finance import fin_parsing
-# from configs.storage import settings as sets
 
 funcs = {
     'telegram': parsing_tg,
@@ -43,6 +41,7 @@ def handler(event={}, context=None):
 
 
 if __name__ == "__main__":
+<<<<<<< HEAD
     test = {"parse": {"intermedia": []}}
     # test = {"parse": {"rbc": {
     #                     'finec': ['economy','finance'],
@@ -50,6 +49,15 @@ if __name__ == "__main__":
     #                     'politic': ['politic']
     #         }}}
     # test = {"parse": {"kinonews": []}}
+=======
+    # test = {"parse": {"intermedia": []}}
+    # test = {"parse": {"rbc": {
+    #                     "finec": ["economy","finance"],
+    #                     "business": ["business"],
+    #                     "politic": ["politic"]
+    #         }}}
+    test = {"parse": {"kinonews": []}}
+>>>>>>> local
     # test = {"parse": {"calend": []}}
     # test = {"parse": {"telegram": [
     #                             "meduzalive",
