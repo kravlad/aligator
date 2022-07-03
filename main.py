@@ -45,8 +45,8 @@ if __name__ == "__main__":
     test = {"parse": {"kinonews": []}}
     # test = {"parse": {"calend": []}}
     # test = {"parse": {"telegram": [
-                                # "meduzalive",
-                                # "svtvnews",
+    #                             "meduzalive",
+    #                             "svtvnews",
     #                             "theinsider",
     #                             "proektproekt",
     #                             "agentstvonews",

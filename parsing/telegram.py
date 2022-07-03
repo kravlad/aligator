@@ -14,7 +14,7 @@ replacement = cfg.replacement['telegram']
 
 
 async def daily(data, head):
-    msgs = await making(data, head=head, header=False, hashtag=' | #главное')
+    msgs = await making(data, head=head, header=False, footer='rusmsp')
     await sending(msgs, summ_chan)
     # run_date = datetime.now() + timedelta(minutes=10)
     # scheduler.add_job(sending,
@@ -65,7 +65,7 @@ async def parsing_tg(sources):
                         start = i.find('>', start) + 1
                         html_text = '<i>' + i[start:end]
                     # html_text = html_text
-                    if 'pinned a photo' not in html_text:
+                    if 'pinned' not in html_text:
                         new_text = await replacing(html_text, replacement)
                         while new_text.startswith('\n'):
                             new_text = new_text[2:]
@@ -78,7 +78,7 @@ async def parsing_tg(sources):
                             (source == 'tele_eve' and '#картинадня' in html_text) or \
                             (source == 'tele_eve' and '#главноезаночь' in html_text):
                             
-                            head = '@{source} | #{source} | #главное\n'
+                            head = f'@{source} | #{source} | #главное'
                             await daily({source: {msg_id: data[source][msg_id]}}, head)
                             data[source][msg_id]['publish'] = False
         
@@ -104,6 +104,6 @@ async def parsing_tg(sources):
     if data.get('tele_eve'):
         data.pop('tele_eve')
     
-    head = '@{source} | #{source} | #новости'
+    head = f'@{source} | #{source} | #новости'
     msgs = await making(data, head)
     await sending(msgs)

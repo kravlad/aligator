@@ -16,6 +16,7 @@ bm_path = os.environ.get('BM_PATH')
 bucket_path = os.environ.get('BUCKET_PATH')
 tg_link = cfg.urls['telegram']
 pips = cfg.pips
+footer = 'rufeedsp'
 
 # opsp_chan = os.environ.get('OPSP_CHAN')
 # tzone = os.environ.get('TZONE')
@@ -142,10 +143,10 @@ async def bm(src, data=None):
     return data
 
 
-async def making(data, head, header=True, hashtag=''):
+async def making(data, head, header=True, footer=footer):
     new_data = []
     for source in data.keys():
-        pip = pips.get(source, '\n🔹')
+        pip = pips.get(source, '🔹')
         # source_link = link.format(source)
         # head = f'#{source} | {source_link}{hashtag}\n'
         msg = ''
@@ -161,17 +162,17 @@ async def making(data, head, header=True, hashtag=''):
                     else:
                         text = data[source][n]['html_text']
                     lnk = data[source][n]['link']
-                    item = f'{pip}{text} / <a href="{lnk}">read</a>\n'
+                    item = f'{pip}{text} / <a href="{lnk}">read</a>\n\n'
                     if i <= 15:
                         msg = f'{msg}{item}'
                         i += 1
                     else:
-                        msg = f'{head}\n\n{msg}\n{head}\n@rufeedsp'
+                        msg = f'{head}\n\n{msg}{head}\n@{footer}'
                         new_data.append(msg)
                         i = 0
                         msg = f'{item}'
             if msg:
-                msg = f'{head}\n\n{msg}\n{head}\n@rufeedsp'
+                msg = f'{head}\n\n{msg}{head}\n@{footer}'
                 new_data.append(msg)
     return new_data
 
