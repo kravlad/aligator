@@ -49,7 +49,6 @@ if __name__ == "__main__":
     #         }}}
     test = {"parse": {"kinonews": []}}
     # test = {"parse": {"calend": []}}
->>>>>>> local
     # test = {"parse": {"telegram": [
     #                             "meduzalive",
     #                             "svtvnews",
