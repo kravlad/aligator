@@ -48,7 +48,7 @@ if __name__ == "__main__":
     #                     "politic": ["politic"]
     #         }}}
     # test = {"parse": {"kinonews": []}}
-    # test = {"parse": {"calend": []}}
+    test = {"parse": {"calend": []}}
     # test = {"parse": {"telegram": [
     #                             "meduzalive",
     #                             "svtvnews",
