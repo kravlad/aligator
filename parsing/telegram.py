@@ -6,7 +6,7 @@ from datetime import datetime
 # from apscheduler.schedulers.asyncio import AsyncIOScheduler # pip3 install apscheduler
 
 import config as cfg
-from defs import summ_chan, replacing, send_telegram, bm, making, sending
+from defs import summ_chan, replacing, send_telegram, bm, making, sending, opsp_chan
 
 # scheduler = AsyncIOScheduler(daemon=True)
 tg_link = cfg.urls['telegram']
@@ -15,7 +15,7 @@ replacement = cfg.replacement['telegram']
 
 async def daily(data, head):
     msgs = await making(data, head=head, header=False, footer='rusmsp')
-    await sending(msgs, summ_chan)
+    await sending(msgs, summ_chan, forward=opsp_chan)
     # run_date = datetime.now() + timedelta(minutes=10)
     # scheduler.add_job(sending,
     #                         'date',
@@ -104,6 +104,9 @@ async def parsing_tg(sources):
     if data.get('tele_eve'):
         data.pop('tele_eve')
     
-    head = f'@{source} | #{source} | #новости'
-    msgs = await making(data, head)
+    msgs = []
+    for m in data.keys():
+        head = f'@{m} | #{m} | #новости'
+        msg = await making({m: data[m]}, head)
+        msgs.append(msg)
     await sending(msgs)

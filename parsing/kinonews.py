@@ -5,7 +5,7 @@ from datetime import datetime
 
 # import tools.mongodb as db
 import config as cfg
-from defs import bm, making, sending
+from defs import bm, making, sending, opsp_chan
 # import defs.common as common
 
 async def parsing_kinonews(nothing):

@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 
 import config as cfg
-from defs import sending
+from defs import sending, opsp_chan
 
 website = cfg.urls['calend']['url']
 date = datetime.now() # + timedelta(hours=10)
@@ -90,4 +90,4 @@ async def parsing_calend(nothing):
     for d in datas:
         msg = await making(d, 'события-персоны')
         msgs.append(msg)
-    await sending(msgs)
+    await sending(msgs, forward=opsp_chan)
