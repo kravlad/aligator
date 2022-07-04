@@ -78,6 +78,12 @@ async def get_balls(num):
         sign = '🟡'
     return sign
 
+async def dec_place(num):
+    # locale.setlocale(locale.LC_ALL, 'ru_RU.utf8') #ru_RU.UTF-8 for Mac
+    # val = '{:n}'.format(num)
+    val = '{:,.2f}'.format(num).replace(',', ' ')
+    return val
+
 
 async def send_telegram(text: str, chat_id=news_chan):
     # token = sets['token']

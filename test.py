@@ -1,6 +1,8 @@
-import os
-import requests
 from datetime import datetime, timedelta
 
-r = requests.get('https://www.instagram.com/p/CfbLh4fjLzV')
+
+
+date = datetime.now() - timedelta(hours=24)
+x = date.strftime('%d/%m/%Y')
+
 pass
