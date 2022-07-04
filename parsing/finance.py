@@ -1,85 +1,93 @@
-import requests
 import time
-import yfinance as yf
 import json
+import requests
 import xmltodict
+import yfinance as yf
+from datetime import datetime, timedelta
 
-import config.config as cfg
-import defs.common as common
+import config as cfg
+from defs import summ_chan, send_telegram, bm, dec_place
 
-async def get_fin():    
-    head = 'finance'
-    tmpDate = await common.get_time()
-    
-    tickers = {
-        'cbr-xml-daily': 
-            ['USD', 'EUR', 'GBP', 'CNY'],  
-        'cbr': {
-            'Золото': [4,0],
-            'Серебро': [5,1],
-            'Платина': [6,2],
-            'Палладий': [7,3],
-            },        
-        'yahoo': {
-            'crypto': {
-                'BTC': 'BTC-USD',
-                'ETH': 'ETH-USD'
+tickers = {
+    'cbr-xml-daily': 
+        ['USD', 'EUR', 'GBP', 'CNY'],  
+    'cbr': {
+        'Золото': [4,0],
+        'Серебро': [5,1],
+        'Платина': [6,2],
+        'Палладий': [7,3],
+        },        
+    'yahoo': {
+        'crypto': {
+            'BTC': 'BTC-USD',
+            'ETH': 'ETH-USD'
+    },
+        'commodities': {
+                    'Brent': 'BZ=F',
+                    'Gas': 'NG=F'
         },
-            'commodities': {
-                        'Brent': 'BZ=F',
-                        'Gas': 'NG=F'
-            },
-            'indices': {
-                        'ММВБ': 'IMOEX.ME',
-                        'RTS': 'GOOG', # no hist data
-                        'S&P 500': '%5EGSPC',
-                        'Dow Jones': '%5EDJI',
-                        'Nasdaq': '%5EIXIC',
-                        'FTSE': '%5EFTSE'
-            }
+        'indices': {
+                    'ММВБ': 'IMOEX.ME',
+                    'RTS': 'GOOG', # no hist data
+                    'S&P 500': '%5EGSPC',
+                    'Dow Jones': '%5EDJI',
+                    'Nasdaq': '%5EIXIC',
+                    'FTSE': '%5EFTSE'
         }
     }
+}
 
+async def parsing_finance(nothing):    
+    head = 'finance'
     data = {'cbr': {'curency': {}, 'metals': {'Золото': {}, 'Серебро': {}, 'Платина': {}, 'Палладий': {}, }}, 'yahoo': {'crypto': {}, 'commodities': {}, 'indices': {}}}
     
     r = requests.get('https://www.cbr-xml-daily.ru/daily_json.js')
-    xxx = json.loads(r.text)
+    content = json.loads(r.text)
     
     for i in tickers['cbr-xml-daily']:
-        val = xxx['Valute'][i]['Value']
-        prval = xxx['Valute'][i]['Previous']
-        dif = round(val - prval, 2)
-        strval = await common.dec_place(round(val, 2))
-        strdif = await common.dec_place(dif)
-        llen = len(i) + len(strval)
+        val = content['Valute'][i]['Value']
+        pr_val = content['Valute'][i]['Previous']
+        dif = round(val - pr_val, 2)
+        str_val = await dec_place(round(val, 2))
+        str_dif = await dec_place(dif)
+        llen = len(i) + len(str_val)
         data['cbr']['curency'][i] = {
-            'strval': strval,
+            'str_val': str_val,
             'dif': dif,
-            'strdif': strdif,
+            'str_dif': str_dif,
             'len': llen
         }
+        
+    date = datetime.now()
+    today = date.strftime('%d/%m/%Y')
+    yesterday = (date - timedelta(hours=24)).strftime('%d/%m/%Y')
 
-    l = 'https://www.cbr.ru/scripts/xml_metall.asp?date_req1=' + str(tmpDate['mskylist'][2]).rjust(2, '0') + '/' + str(tmpDate['mskylist'][1]).rjust(2, '0') + '/' + str(tmpDate['mskylist'][0]) + '&date_req2=' + str(tmpDate['msklist'][2]).rjust(2, '0') + '/' + str(tmpDate['msklist'][1]).rjust(2, '0') + '/' + str(tmpDate['msklist'][0])
+    url = f'https://www.cbr.ru/scripts/xml_metall.asp?date_req1={yesterday}&date_req2={today}'
     # l = 'https://www.cbr.ru/scripts/xml_metall.asp?date_req1=10/06/2022&date_req2=11/06/2022'
     
-    r = requests.get(l) # fix if holiday
-    xxx = xmltodict.parse(r.text)
+    r = requests.get(url) # fix if holiday
+    content = xmltodict.parse(r.text)
+    
+    full = len(content['Metall']['Record']) > 4
     
     for i in tickers['cbr']:
         k = tickers['cbr'][i][0]
         j = tickers['cbr'][i][1]
         
-        val = float(xxx['Metall']['Record'][k]['Buy'].replace(',', '.'))
-        prval = float(xxx['Metall']['Record'][j]['Buy'].replace(',', '.'))
-        dif = round(val - prval, 2)
-        perc = round((val - prval) / prval * 100, 2)
-        strval = await common.dec_place(round(val, 2))
-        strperc = await common.dec_place(perc)
-        llen = len(i) + len(strval)
+        pr_val = float(content['Metall']['Record'][j]['Buy'].replace(',', '.'))
+        if full:
+            val = float(content['Metall']['Record'][k]['Buy'].replace(',', '.'))
+        else:
+            val = pr_val
+        dif = round(val - pr_val, 2)
+        perc = round((val - pr_val) / pr_val * 100, 2)
+        str_val = await dec_place(round(val, 2))
+        str_perc = await dec_place(perc)
+        llen = len(i) + len(str_val)
         data['cbr']['metals'][i] = {
-            'strval': strval,
+            'strval': str_val,
             'dif': dif,
-            'strperc': strperc,
+            'strperc': str_perc,
             'len': llen
         }
 
@@ -101,60 +109,50 @@ async def get_fin():
             crypto = tickers['yahoo']['crypto'].values()
             if i in crypto:
                 last_close = history.Close.values[-2]
-                prval = history.Close.values[-3]
-                diff = last_close - prval
+                pr_val = history.Close.values[-3]
+                diff = last_close - pr_val
             else:
                 if i == 'NG=F':
                     last_close = history.Close.values[-1] / 0.02802113521 / eurusd
-                    prval = history.Close.values[-2] / 0.02802113521 / eurusd
+                    pr_val = history.Close.values[-2] / 0.02802113521 / eurusd
                 else:
                     last_close = history.Close.values[-1]
-                    prval = history.Close.values[-2]
-                diff = last_close - prval
+                    pr_val = history.Close.values[-2]
+                diff = last_close - pr_val
             val = round(last_close, 2)
-            strval = await common.dec_place(val)
+            str_val = await dec_place(val)
             dif = round(diff, 2)
-            perc = round(diff / prval * 100, 2)
-            strperc = await common.dec_place(perc)
+            perc = round(diff / pr_val * 100, 2)
+            str_perc = await dec_place(perc)
             
-            x[i] = {'val': val, 'strval': strval, 'dif': dif, 'strperc': strperc}
+            x[i] = {'val': val, 'str_val': str_val, 'dif': dif, 'strperc': str_perc}
 
     for i in tickers['yahoo']:
         for k in tickers['yahoo'][i]:
             data['yahoo'][i][k] = x[tickers['yahoo'][i][k]]
-            data['yahoo'][i][k]['len'] = len(k) + len(data['yahoo'][i][k]['strval'])
+            data['yahoo'][i][k]['len'] = len(k) + len(data['yahoo'][i][k]['str_val'])
     
-    with open('parsing/files/finance.json', 'r') as f:
+    with open('tmp/finance.json', 'r') as f:
         rts = json.load(f)
     
     pr_close = rts['yahoo']['indices']['RTS']['close']
     close = yf.Ticker("RTSI.ME").info['previousClose']
     
     rts['yahoo']['indices']['RTS'] = {'pr_close': pr_close, 'close': close}
-    with open('parsing/files/finance.json', 'w') as f:
+    with open('tmp/finance.json', 'w') as f:
         rts = json.dump(rts, f)
     
     val = round(close, 2)
-    strval = await common.dec_place(val)
+    str_val = await dec_place(val)
     dif = round(close - pr_close, 2)
     perc = round((close - pr_close) / pr_close * 100, 2)
-    strperc = await common.dec_place(perc)
-    llen = len(strval) + 3
-    data['yahoo']['indices']['RTS'] = {'val': val, 'strval': strval, 'dif': dif, 'strperc': strperc, 'len': llen}
+    str_perc = await dec_place(perc)
+    llen = len(str_val) + 3
+    data['yahoo']['indices']['RTS'] = {'val': val, 'str_val': str_val, 'dif': dif, 'str_perc': str_perc, 'len': llen}
     return(head, data)
 
 
 async def fin_parsing():
-    x = await get_fin()
-    head = x[0]
-    data = x[1]
-    tmpDate = await common.get_time()
-    
-    # определяем текст сообщения (заголовок и конец)
-    headmsg = '<b>Котировки на сегодня:</b>\n' + tmpDate['msk_wd'] + ', ' + tmpDate['msk_date_tod'] + '\n'
-    endmsg = '\nИсточник: cbr.ru | yahoo.com' + \
-        '\n\n#<b>финансы</b> #cbr #yahoo #цбрф #банкроссии #инвестиции #котировки #биржа #сводка' + cfg.bot_msg_tail
-
     inds = {}
     for i in data:
         for j in data[i]:
@@ -169,8 +167,8 @@ async def fin_parsing():
     msg = headmsg + '\nКурсы ЦБ РФ:\n'
     for item in ['USD', 'EUR', 'GBP', 'CNY']:
         obj = data['cbr']['curency'][item]
-        sign = await common.get_balls(obj['dif'])
-        msg = msg + sign + '<pre>' + item + ' ' + obj['strval'] + ' ₽ (' + obj['strdif'] + ' ₽)</pre>\n'
+        sign = await get_balls(obj['dif'])
+        msg = '{}{}<pre>{} {} ₽ ({} ₽)</pre>\n'.format(msg, sign, item, obj['str_val'], obj['str_dif'])
     
     msg = msg + '\nДрагоценные металлы:\n'
     for item in data['cbr']['metals']:
@@ -207,9 +205,3 @@ async def fin_parsing():
         
     msg = msg + endmsg
     msgdata = {0: msg}
-    print(msgdata)
-    return msgdata
-
-if __name__ == "__main__":
-    import asyncio
-    asyncio.run(fin_parsing())
