@@ -5,6 +5,13 @@ from bs4 import BeautifulSoup # pip3 install bs4
 import config as cfg
 from defs import bm, making, sending
 
+hashtags = {
+            'finec': 'финансы',
+            'business': 'бизнес',
+            'politic': 'политика'
+            }
+
+
 async def parsing_rbc(sources):
     data = {}
     for source in sources.keys():
@@ -49,6 +56,6 @@ async def parsing_rbc(sources):
             sorted_data = sorted(data[source].items(), key=lambda x: x[0])
             data[source] = dict(sorted_data)
                 
-            head = 'rbc.ru | #рбк | #{}'.format(source)
+            head = 'rbc.ru | #рбк | #{}'.format(hashtags[source])
             msgs = await making(data, head=head, header=False)
             await sending(msgs)

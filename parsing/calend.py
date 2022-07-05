@@ -9,15 +9,23 @@ website = cfg.urls['calend']['url']
 date = datetime.now() # + timedelta(hours=10)
 str_date = '{}-{}-{}'.format(date.year, date.month, date.day)
 pips = cfg.pips
-xxx = cfg.urls['calend']['chapts']
+chapts = cfg.urls['calend']['chapts']
 pages = [['holidays','events'],['persons']]
 
-async def making(data, hashtag):
-    head = f'calend.ru | #календарь | #{hashtag}\n'
+hashtags = {'holidays': 'события',
+            'thisDay': 'события',
+            'events': 'события',
+            'births': 'персоны',
+            'mourns': 'персоны'
+    }
+
+async def making(data):
+    tmp = list(data.keys())[0]
+    head = 'calend.ru | #календарь | #{}\n'.format(hashtags[tmp])
     msg = ''
     for src in data.keys():
         pip = pips.get(src, '🔹')
-        h2 = xxx[src]
+        h2 = chapts[src]
         msg = f'{msg}\n{h2}:\n'
         if data[src]:
             i = 0
@@ -54,9 +62,10 @@ async def parsing_calend(nothing):
             soup = BeautifulSoup(r.content, 'html.parser')
             if page == 'holidays':
                 holidays = soup.find_all('div', class_='block holidays')[0]
-                thisDay = soup.find_all('div', class_='block thisDay')[0]
+                thisDay = soup.find_all('div', class_='block thisDay')
                 chapts['holidays'] = holidays.find_all('li', class_='three-three')
-                chapts['thisDay'] = thisDay.find_all('li', class_='three-three')
+                if thisDay:
+                    chapts['thisDay'] = thisDay[0].find_all('li', class_='three-three')
             elif page == 'events':
                 events = soup.find_all('div', class_='knownDates famous-date')[0]
                 chapts['events'] = events.find_all('li', class_='three-three')
@@ -88,6 +97,6 @@ async def parsing_calend(nothing):
     
     msgs = []
     for d in datas:
-        msg = await making(d, 'события-персоны')
+        msg = await making(d)
         msgs.append(msg)
     await sending(msgs, forward=opsp_chan)
