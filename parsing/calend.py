@@ -6,7 +6,7 @@ import config as cfg
 from defs import sending, opsp_chan
 
 website = cfg.urls['calend']['url']
-date = datetime.now() # + timedelta(hours=10)
+date = datetime.now() - timedelta(hours=24)
 str_date = '{}-{}-{}'.format(date.year, date.month, date.day)
 pips = cfg.pips
 chapts = cfg.urls['calend']['chapts']
@@ -32,16 +32,18 @@ async def making(data):
             for n in data[src]:
                 lnk = data[src][n]['link']
                 text = data[src][n]['text']
-                l_text = text.split()
-                if src in ['births','mourns']:
-                    t1 = l_text[0]
-                    t2 = l_text[2]
-                    t3 = ' '.join(l_text[3:])
-                    item = f'{pip}<a href="{lnk}">{t1}</a> - <a href="{lnk}">{t2}</a> {t3}\n'
+                
+                if src in ['holidays','thisDay']:
+                    spl_text = text.split()
+                    frst_half = spl_text[0]
+                    snd_half = ' '.join(spl_text[1:])
+                    item = f'{pip}<a href="{lnk}">{frst_half}</a> {snd_half}\n'
                 else:
-                    t1 = l_text[0]
-                    t2 = ' '.join(l_text[1:])
-                    item = f'{pip}<a href="{lnk}">{t1}</a> {t2}\n'
+                    b_year = data[src][n]['b_year']
+                    d_year = data[src][n]['d_year']
+                    html_b_year = f'{pip}<a href="{lnk}">{b_year}</a>' if b_year else ''
+                    html_d_year = f' - <a href="{lnk}">{d_year}</a>' if d_year else ''
+                    item = f'{html_b_year}{html_d_year} {text}\n'
                 msg = f'{msg}{item}'
     if msg:
         msg = f'\n\n{head}{msg}\n{head}@rusmsp'
@@ -81,17 +83,21 @@ async def parsing_calend(nothing):
                 link = tmp.contents[0].attrs['href']
                 title = tmp.text
                 if chapt in ['events','births','mourns']:
-                    b_year = item.find('span', {'class': 'year'}).text
+                    b_year = item.find('span', {'class': 'year'}).text.split()[-1]
                     if chapt != 'events':
                         tmp = item.find('span', {'class': 'year2'})
                         d_year = tmp.text if tmp else ''
-                        years = f'{b_year} - {d_year} '
+                        # years = f'{b_year}{d_year} '
                     else:
-                        years = f'{b_year} - '
+                        # years = f'{b_year}'
+                        d_year = ''
                 else:
-                    years = ''
+                    b_year = ''
+                    d_year = ''
                 data[chapt][k] = {'link': link,
-                                'text': f'{years}{title}'}
+                                'b_year': b_year,
+                                'd_year': d_year,
+                                'text': title}
                 k += 1        
         datas.append(data)
     

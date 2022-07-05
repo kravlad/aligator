@@ -7,7 +7,7 @@ from parsing.intermedia import parsing_intermedia
 from parsing.kinonews import parsing_kinonews
 from parsing.calend import parsing_calend
 from parsing.rbc import parsing_rbc
-# from parsing.finance import parsing_finance
+from parsing.finance import parsing_finance
 
 funcs = {
     'telegram': parsing_tg,
@@ -15,7 +15,7 @@ funcs = {
     'intermedia': parsing_intermedia,
     'calend': parsing_calend,
     'rbc': parsing_rbc,
-    # 'finance': parsing_finance,
+    'finance': parsing_finance,
 }
 
 def handler(event={}, context=None):
@@ -44,13 +44,13 @@ def handler(event={}, context=None):
 if __name__ == "__main__":
     # test = {"parse": {"finance": []}}
     # test = {"parse": {"intermedia": []}}
-    test = {"parse": {"rbc": {
-                        "finec": ["economy","finance"],
-                        "business": ["business"],
-                        "politic": ["politic"]
-            }}}
+    # test = {"parse": {"rbc": {
+    #                     "finec": ["economy","finance"],
+    #                     "business": ["business"],
+    #                     "politic": ["politic"]
+    #         }}}
     # test = {"parse": {"kinonews": []}}
-    # test = {"parse": {"calend": []}}
+    test = {"parse": {"calend": []}}
     # test = {"parse": {"telegram": [
     #                             "meduzalive",
     #                             "svtvnews",
