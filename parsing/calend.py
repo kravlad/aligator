@@ -6,34 +6,44 @@ import config as cfg
 from defs import sending, opsp_chan
 
 website = cfg.urls['calend']['url']
-date = datetime.now() # + timedelta(hours=10)
+date = datetime.now() - timedelta(hours=24)
 str_date = '{}-{}-{}'.format(date.year, date.month, date.day)
 pips = cfg.pips
-xxx = cfg.urls['calend']['chapts']
+chapts = cfg.urls['calend']['chapts']
 pages = [['holidays','events'],['persons']]
 
-async def making(data, hashtag):
-    head = f'calend.ru | #календарь | #{hashtag}\n'
+hashtags = {'holidays': 'события',
+            'thisDay': 'события',
+            'events': 'события',
+            'births': 'персоны',
+            'mourns': 'персоны'
+    }
+
+async def making(data):
+    tmp = list(data.keys())[0]
+    head = 'calend.ru | #календарь | #{}\n'.format(hashtags[tmp])
     msg = ''
     for src in data.keys():
         pip = pips.get(src, '🔹')
-        h2 = xxx[src]
+        h2 = chapts[src]
         msg = f'{msg}\n{h2}:\n'
         if data[src]:
             i = 0
             for n in data[src]:
                 lnk = data[src][n]['link']
                 text = data[src][n]['text']
-                l_text = text.split()
-                if src in ['births','mourns']:
-                    t1 = l_text[0]
-                    t2 = l_text[2]
-                    t3 = ' '.join(l_text[3:])
-                    item = f'{pip}<a href="{lnk}">{t1}</a> - <a href="{lnk}">{t2}</a> {t3}\n'
+                
+                if src in ['holidays','thisDay']:
+                    spl_text = text.split()
+                    frst_half = spl_text[0]
+                    snd_half = ' '.join(spl_text[1:])
+                    item = f'{pip}<a href="{lnk}">{frst_half}</a> {snd_half}\n'
                 else:
-                    t1 = l_text[0]
-                    t2 = ' '.join(l_text[1:])
-                    item = f'{pip}<a href="{lnk}">{t1}</a> {t2}\n'
+                    b_year = data[src][n]['b_year']
+                    d_year = data[src][n]['d_year']
+                    html_b_year = f'{pip}<a href="{lnk}">{b_year}</a>' if b_year else ''
+                    html_d_year = f' - <a href="{lnk}">{d_year}</a>' if d_year else ''
+                    item = f'{html_b_year}{html_d_year} {text}\n'
                 msg = f'{msg}{item}'
     if msg:
         msg = f'\n\n{head}{msg}\n{head}@rusmsp'
@@ -54,9 +64,10 @@ async def parsing_calend(nothing):
             soup = BeautifulSoup(r.content, 'html.parser')
             if page == 'holidays':
                 holidays = soup.find_all('div', class_='block holidays')[0]
-                thisDay = soup.find_all('div', class_='block thisDay')[0]
+                thisDay = soup.find_all('div', class_='block thisDay')
                 chapts['holidays'] = holidays.find_all('li', class_='three-three')
-                chapts['thisDay'] = thisDay.find_all('li', class_='three-three')
+                if thisDay:
+                    chapts['thisDay'] = thisDay[0].find_all('li', class_='three-three')
             elif page == 'events':
                 events = soup.find_all('div', class_='knownDates famous-date')[0]
                 chapts['events'] = events.find_all('li', class_='three-three')
@@ -72,22 +83,26 @@ async def parsing_calend(nothing):
                 link = tmp.contents[0].attrs['href']
                 title = tmp.text
                 if chapt in ['events','births','mourns']:
-                    b_year = item.find('span', {'class': 'year'}).text
+                    b_year = item.find('span', {'class': 'year'}).text.split()[-1]
                     if chapt != 'events':
                         tmp = item.find('span', {'class': 'year2'})
                         d_year = tmp.text if tmp else ''
-                        years = f'{b_year} - {d_year} '
+                        # years = f'{b_year}{d_year} '
                     else:
-                        years = f'{b_year} - '
+                        # years = f'{b_year}'
+                        d_year = ''
                 else:
-                    years = ''
+                    b_year = ''
+                    d_year = ''
                 data[chapt][k] = {'link': link,
-                                'text': f'{years}{title}'}
+                                'b_year': b_year,
+                                'd_year': d_year,
+                                'text': title}
                 k += 1        
         datas.append(data)
     
     msgs = []
     for d in datas:
-        msg = await making(d, 'события-персоны')
+        msg = await making(d)
         msgs.append(msg)
     await sending(msgs, forward=opsp_chan)

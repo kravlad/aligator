@@ -2,7 +2,7 @@ import time
 import json
 import requests
 import xmltodict
-import yfinance as yf
+# import yfinance as yf
 from datetime import datetime, timedelta
 
 import config as cfg
@@ -90,6 +90,23 @@ async def parsing_finance(nothing):
             'strperc': str_perc,
             'len': llen
         }
+
+
+    # user_agent_headers = {
+    #     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
+
+    # r = requests.get(url='http://query2.finance.yahoo.com/v8/finance/chart/aapl?range=5d&interval=1d',headers=user_agent_headers)
+    # data = json.loads(r.text)
+
+    # tss = data['chart']['result'][0]['timestamp']
+    # xxx = {}
+    # for i in tss:
+    #     xxx[i] = datetime.fromtimestamp(i)
+
+
+
+
+
 
     t = 'EURUSD=X '
     for i in tickers['yahoo']:
