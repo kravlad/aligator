@@ -42,7 +42,7 @@ def handler(event={}, context=None):
 
 
 if __name__ == "__main__":
-    # test = {"parse": {"finance": []}}
+    test = {"parse": {"finance": []}}
     # test = {"parse": {"intermedia": []}}
     # test = {"parse": {"rbc": {
     #                     "finec": ["economy","finance"],
@@ -50,7 +50,7 @@ if __name__ == "__main__":
     #                     "politic": ["politic"]
     #         }}}
     # test = {"parse": {"kinonews": []}}
-    test = {"parse": {"calend": []}}
+    # test = {"parse": {"calend": []}}
     # test = {"parse": {"telegram": [
     #                             "meduzalive",
     #                             "svtvnews",
