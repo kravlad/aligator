@@ -138,3 +138,4 @@ notes.txt
 configs/config.json
 test.py
 buildspec.yml
+.vscode/
