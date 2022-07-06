@@ -38,33 +38,25 @@ async def parsing_tg(sources):
             if r.status_code != 502:
                 break
             await asyncio.sleep(3)
-        content = r.text.split('data-post=')
+            
+        soup = BeautifulSoup(r.content, 'html.parser')
+        content = soup.find_all('div', class_= 'tgme_widget_message_wrap')
         if len(content) > 0:
             source = source.split('?')[0]
             last_id = bookmarks['bookmarks'][source]
             if not data.get(source):
                 data[source] = {}
             all_ids = []
-            for i in content[1:]:
-                end = i.find('data-view=') - 2
-                link = i[1:end]
-                msg_id = int(link.split('/')[1])
+            for i in content:
+                tmp = i.find('div', class_= 'tgme_widget_message')
+                link = tmp.attrs['data-post']
+                msg_id = int(link.split('/')[-1])
                 all_ids.append(msg_id)
+
                 if msg_id > last_id:
-                    start = i.find('tgme_widget_message_text', end)
-                    xwer = i[start:(start + 70)]
-                    if 'js-message_reply_text' in xwer:
-                        start = i.find('tgme_widget_message_text', (start + 70))
-                        
-                    start = i.find('>', start) + 1
-                    end = i.find('tgme_widget_message_link_preview', start) - 17
-                    if end < 0:
-                        end = i.find('tgme_widget_message_footer', start) - 20
-                    html_text = i[start:end]
-                    if html_text.startswith('<i class='):
-                        start = i.find('>', start) + 1
-                        html_text = '<i>' + i[start:end]
-                    # html_text = html_text
+                    x = tmp.find('div', class_= 'tgme_widget_message_text js-message_text')
+                    y = [str(i) for i in x.contents]
+                    html_text = ''.join(y)
                     if 'pinned' not in html_text:
                         new_text = await replacing(html_text, replacement)
                         while new_text.startswith('\n'):
@@ -72,7 +64,7 @@ async def parsing_tg(sources):
                         
                         header = new_text.split('\n')[0].replace('<b>', '').replace('</b>', '')
                         data[source][msg_id] = {'id': msg_id, 'publish': True, 'link': f'{tg_link}{link}', 'header': header, 'html_text': new_text}
-                        
+                                
                         if (source == 'svtvnews' and header.startswith('Что случилось')) or \
                             (source == 'theinsider' and header.startswith('Главное за день')) or \
                             (source == 'tele_eve' and '#картинадня' in html_text) or \
@@ -104,9 +96,9 @@ async def parsing_tg(sources):
     if data.get('tele_eve'):
         data.pop('tele_eve')
     
-    msgs = []
+    # msgs = []
     for m in data.keys():
         head = f'@{m} | #{m} | #новости'
         msg = await making({m: data[m]}, head)
-        msgs.append(msg)
-    await sending(msgs)
+        # msgs.append(msg)
+        await sending(msg)
