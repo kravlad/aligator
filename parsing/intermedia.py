@@ -17,30 +17,27 @@ async def parsing_intermedia(nothing):
         if r.status_code != 502:
             break
         await asyncio.sleep(3)
-    
-    content = r.text.split('news-item')
+        
+    soup = BeautifulSoup(r.content, 'html.parser')
+    content = soup.find_all('section', class_= 'news-item')
+        
     if len(content) > 0:
         data = {source: {}}
         k = 0
-        for i in content[1:]:
-            start = i.find('data-new_id=') + 13
-            end = i.find('>', start) - 1
-            item_id = int(i[start:end])
+        for i in content:
+            item_id = int(i.attrs['data-new_id'])
             if item_id != last_id:
-                start = i.find('alt=', end) + 5
-                end = i.find('>', start) - 1
-                html_text = i[start:end]
-        
+                text = i.find('div', class_= 'title').contents[-1].replace('\r', '').replace('\n', '').replace('\t', '')
                 data[source][k] = {
                         'id': item_id,
                         'publish': True,
                         'link': f'{website}/news/{item_id}',
-                        'html_text': html_text
+                        'html_text': text
                 }
                 k -= 1
             else:
                 break
-    
+            
     if k < 0:
         last_id = data[source][0]['id']
         await bm(src=source, data={'date': str(datetime.now()), 'bookmarks': {source: last_id}})
