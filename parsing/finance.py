@@ -33,140 +33,131 @@ tickers = {
                     'Dow Jones': '%5EDJI',
                     'Nasdaq': '%5EIXIC',
                     'FTSE': '%5EFTSE'
-        }
+        },
+        'currencies': {'EURUSD': 'EURUSD=X'}
     }
 }
 
+yurl = 'http://query2.finance.yahoo.com/v8/finance/chart/{}?range=5d&interval=1d'
+
+user_agent_headers = {
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
+
+
 async def parsing_finance(nothing):    
     head = 'finance'
-    data = {'cbr': {'curency': {}, 'metals': {'Золото': {}, 'Серебро': {}, 'Платина': {}, 'Палладий': {}, }}, 'yahoo': {'crypto': {}, 'commodities': {}, 'indices': {}}}
+    data = {'cbr': {'curency': {}, 'metals': {'Золото': {}, 'Серебро': {}, 'Платина': {}, 'Палладий': {}, }}, 'yahoo': {'crypto': {}, 'commodities': {}, 'indices': {}, 'currencies': {}}}
     
-    r = requests.get('https://www.cbr-xml-daily.ru/daily_json.js')
-    content = json.loads(r.text)
+    # r = requests.get('https://www.cbr-xml-daily.ru/daily_json.js')
+    # content = json.loads(r.text)
     
-    for i in tickers['cbr-xml-daily']:
-        val = content['Valute'][i]['Value']
-        pr_val = content['Valute'][i]['Previous']
-        dif = round(val - pr_val, 2)
-        str_val = await dec_place(round(val, 2))
-        str_dif = await dec_place(dif)
-        llen = len(i) + len(str_val)
-        data['cbr']['curency'][i] = {
-            'str_val': str_val,
-            'dif': dif,
-            'str_dif': str_dif,
-            'len': llen
-        }
+    # for i in tickers['cbr-xml-daily']:
+    #     val = content['Valute'][i]['Value']
+    #     pr_val = content['Valute'][i]['Previous']
+    #     dif = round(val - pr_val, 2)
+    #     str_val = await dec_place(round(val, 2))
+    #     str_dif = await dec_place(dif)
+    #     llen = len(i) + len(str_val)
+    #     data['cbr']['curency'][i] = {
+    #         'str_val': str_val,
+    #         'dif': dif,
+    #         'str_dif': str_dif,
+    #         'len': llen
+    #     }
         
-    date = datetime.now()
-    today = date.strftime('%d/%m/%Y')
-    yesterday = (date - timedelta(hours=24)).strftime('%d/%m/%Y')
+    # date = datetime.now()
+    # today = date.strftime('%d/%m/%Y')
+    # yesterday = (date - timedelta(hours=24)).strftime('%d/%m/%Y')
 
-    url = f'https://www.cbr.ru/scripts/xml_metall.asp?date_req1={yesterday}&date_req2={today}'
-    # l = 'https://www.cbr.ru/scripts/xml_metall.asp?date_req1=10/06/2022&date_req2=11/06/2022'
+    # url = f'https://www.cbr.ru/scripts/xml_metall.asp?date_req1={yesterday}&date_req2={today}'
+    # # l = 'https://www.cbr.ru/scripts/xml_metall.asp?date_req1=10/06/2022&date_req2=11/06/2022'
     
-    r = requests.get(url) # fix if holiday
-    content = xmltodict.parse(r.text)
+    # r = requests.get(url) # fix if holiday
+    # content = xmltodict.parse(r.text)
     
-    full = len(content['Metall']['Record']) > 4
+    # full = len(content['Metall']['Record']) > 4
     
-    for i in tickers['cbr']:
-        k = tickers['cbr'][i][0]
-        j = tickers['cbr'][i][1]
+    # for i in tickers['cbr']:
+    #     k = tickers['cbr'][i][0]
+    #     j = tickers['cbr'][i][1]
         
-        pr_val = float(content['Metall']['Record'][j]['Buy'].replace(',', '.'))
-        if full:
-            val = float(content['Metall']['Record'][k]['Buy'].replace(',', '.'))
-        else:
-            val = pr_val
-        dif = round(val - pr_val, 2)
-        perc = round((val - pr_val) / pr_val * 100, 2)
-        str_val = await dec_place(round(val, 2))
-        str_perc = await dec_place(perc)
-        llen = len(i) + len(str_val)
-        data['cbr']['metals'][i] = {
-            'strval': str_val,
-            'dif': dif,
-            'strperc': str_perc,
-            'len': llen
-        }
+    #     pr_val = float(content['Metall']['Record'][j]['Buy'].replace(',', '.'))
+    #     if full:
+    #         val = float(content['Metall']['Record'][k]['Buy'].replace(',', '.'))
+    #     else:
+    #         val = pr_val
+    #     dif = round(val - pr_val, 2)
+    #     perc = round((val - pr_val) / pr_val * 100, 2)
+    #     str_val = await dec_place(round(val, 2))
+    #     str_perc = await dec_place(perc)
+    #     llen = len(i) + len(str_val)
+    #     data['cbr']['metals'][i] = {
+    #         'strval': str_val,
+    #         'dif': dif,
+    #         'strperc': str_perc,
+    #         'len': llen
+    #     }
 
 
-    # user_agent_headers = {
-    #     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
-
-    # r = requests.get(url='http://query2.finance.yahoo.com/v8/finance/chart/aapl?range=5d&interval=1d',headers=user_agent_headers)
-    # data = json.loads(r.text)
-
-    # tss = data['chart']['result'][0]['timestamp']
-    # xxx = {}
-    # for i in tss:
-    #     xxx[i] = datetime.fromtimestamp(i)
-
-
-
-
-
-
-    t = 'EURUSD=X '
     for i in tickers['yahoo']:
-        for k in tickers['yahoo'][i].values():
-            t = t + k + ' '
-    ytickers = yf.Tickers(t)
-    list_tickers = t.split()
-
-    x = {}
-    # get stock info
-    eurusd = ytickers.tickers['EURUSD=X'].history(period="1d").Close.values[-1] # check
-    for i in list_tickers[1:]:
-        history = ytickers.tickers[i].history(period="5d")
-        if history.Close.empty:
-            x[i] = {'close': ytickers.tickers[i].info['previousClose'], 'diff': 0}
-        else:
-            crypto = tickers['yahoo']['crypto'].values()
-            if i in crypto:
-                last_close = history.Close.values[-2]
-                pr_val = history.Close.values[-3]
-                diff = last_close - pr_val
-            else:
-                if i == 'NG=F':
-                    last_close = history.Close.values[-1] / 0.02802113521 / eurusd
-                    pr_val = history.Close.values[-2] / 0.02802113521 / eurusd
-                else:
-                    last_close = history.Close.values[-1]
-                    pr_val = history.Close.values[-2]
-                diff = last_close - pr_val
-            val = round(last_close, 2)
+        for k in tickers['yahoo'][i]:
+            ticker = tickers['yahoo'][i][k]
+            url = yurl.format(ticker)
+            r = requests.get(url=url, headers=user_agent_headers)
+            content = json.loads(r.text)
+            timestamps = content['chart']['result'][0]['timestamp']
+            n = 0
+            items = []
+            for item in timestamps:
+                value = content['chart']['result'][0]['indicators']['quote'][0]['close'][n]
+                items.append({
+                        'date': datetime.fromtimestamp(item),
+                        'value': value if value else 1
+                })
+                n += 1
+                
+            val = items[-2]['value']
+            pr_val = items[-3]['value']
+            diff = val - pr_val
+            val = round(val, 2)
             str_val = await dec_place(val)
             dif = round(diff, 2)
             perc = round(diff / pr_val * 100, 2)
             str_perc = await dec_place(perc)
             
-            x[i] = {'val': val, 'str_val': str_val, 'dif': dif, 'strperc': str_perc}
+            llen = len(ticker) + len(str_val)
+            data['yahoo'][i][k] = {'val': val, 'pr_val': pr_val, 'str_val': str_val, 'dif': dif, 'str_perc': str_perc, 'len': llen}
 
-    for i in tickers['yahoo']:
-        for k in tickers['yahoo'][i]:
-            data['yahoo'][i][k] = x[tickers['yahoo'][i][k]]
-            data['yahoo'][i][k]['len'] = len(k) + len(data['yahoo'][i][k]['str_val'])
-    
+    ngf = data['yahoo']['commodities']['Gas']
+    eurusd = data['yahoo']['currencies']['EURUSD']['val']
+    val = ngf['val'] / 0.02802113521 / eurusd
+    pr_val = ngf['pr_val'] / 0.02802113521 / eurusd
+    data['yahoo']['commodities']['Gas']['val'] = val
+    data['yahoo']['commodities']['Gas']['pr_val'] = pr_val
+
     with open('tmp/finance.json', 'r') as f:
         rts = json.load(f)
     
-    pr_close = rts['yahoo']['indices']['RTS']['close']
-    close = yf.Ticker("RTSI.ME").info['previousClose']
+    pr_val = rts['yahoo']['indices']['RTS']['close']
     
-    rts['yahoo']['indices']['RTS'] = {'pr_close': pr_close, 'close': close}
+    url = yurl.format('RTSI.ME')
+    r = requests.get(url=url, headers=user_agent_headers)
+    content = json.loads(r.text)
+    val = content['chart']['result'][0]['indicators']['quote'][0]['close'][0]
+    
+    rts['yahoo']['indices']['RTS'] = {'pr_close': pr_val, 'close': val}
     with open('tmp/finance.json', 'w') as f:
         rts = json.dump(rts, f)
     
-    val = round(close, 2)
+    val = round(val, 2)
     str_val = await dec_place(val)
-    dif = round(close - pr_close, 2)
-    perc = round((close - pr_close) / pr_close * 100, 2)
+    dif = round(val - pr_val, 2)
+    perc = round((val - pr_val) / pr_val * 100, 2)
     str_perc = await dec_place(perc)
     llen = len(str_val) + 3
-    data['yahoo']['indices']['RTS'] = {'val': val, 'str_val': str_val, 'dif': dif, 'str_perc': str_perc, 'len': llen}
-    return(head, data)
+    data['yahoo']['indices']['RTS'] = {'str_val': str_val, 'dif': dif, 'str_perc': str_perc, 'len': llen}
+    data['yahoo'].pop('currencies')
+    return(data)
 
 
 async def fin_parsing():
