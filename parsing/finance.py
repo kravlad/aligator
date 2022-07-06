@@ -227,8 +227,10 @@ async def parsing_finance(nothing):
     data['commodities']['Gas']['val'] = val
     data['commodities']['Gas']['pr_val'] = pr_val
 
-    with open('tmp/finance.json', 'r') as f:
-        rts = json.load(f)
+    rts = await bm(src='finance')
+
+    # with open('tmp/finance.json', 'r') as f:
+    #     rts = json.load(f)
     
     pr_val = rts['yahoo']['indices']['RTS']['close']
     
@@ -238,8 +240,11 @@ async def parsing_finance(nothing):
     val = content['chart']['result'][0]['indicators']['quote'][0]['close'][0]
     
     rts['yahoo']['indices']['RTS'] = {'pr_close': pr_val, 'close': val}
-    with open('tmp/finance.json', 'w') as f:
-        rts = json.dump(rts, f)
+    
+    await bm(src='finance', data=rts)
+
+    # with open('tmp/finance.json', 'w') as f:
+    #     rts = json.dump(rts, f)
     
     val = round(val, 2)
     str_val = await dec_place(val)
