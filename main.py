@@ -51,8 +51,8 @@ if __name__ == "__main__":
     #         }}}
     # test = {"parse": {"kinonews": []}}
     # test = {"parse": {"calend": []}}
-    # test = {"parse": {"telegram": [
-    #                             "meduzalive",
+    test = {"parse": {"telegram": [
+                                "meduzalive",
     #                             "svtvnews",
     #                             "theinsider",
     #                             "proektproekt",
@@ -64,7 +64,7 @@ if __name__ == "__main__":
     #                             "tvrain",
     #                             "novaya_pishet",
                                 # "tele_eve"
-                                # ]}}
+                                ]}}
     # test = {"get_bm": {"telegram": {
     #                 "meduzalive": 63275,
     #                 "svtvnews": 10410
