@@ -70,8 +70,15 @@ async def send_telegram(text: str, chat_id=news_chan, forward=None):
                                 'disable_web_page_preview': True,
                                 'disable_notification': True
         })
-        save_bm(sets['file_cfg']['bm_path']['telegram'])
-        raise Exception(r.text)
+        asyncio.sleep(1)
+        requests.post(method, data={
+                                "chat_id": log_chan,
+                                "text": text,
+                                'disable_web_page_preview': True,
+                                'disable_notification': True
+        })
+        # save_bm(sets['file_cfg']['bm_path']['telegram'])
+        # raise Exception(r.text)
     
     if forward:
         data = r.json()

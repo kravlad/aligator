@@ -1,5 +1,6 @@
 import time
 import json
+import asyncio
 import requests
 import xmltodict
 # import yfinance as yf
@@ -74,8 +75,13 @@ async def making(data):
     
     return [msg]
 
-async def parsing_finance(nothing):        
-    r = requests.get('https://www.cbr-xml-daily.ru/daily_json.js')
+async def parsing_finance(nothing):   
+    for t in range(2):
+        r = requests.get('https://www.cbr-xml-daily.ru/daily_json.js')
+        if r.status_code != 502:
+            break
+        await asyncio.sleep(3)
+    
     content = json.loads(r.text)
     l = 0
     for i in tickers['cbr-xml-daily']['currencies']:
@@ -100,10 +106,13 @@ async def parsing_finance(nothing):
     yesterday = (date - timedelta(hours=24)).strftime('%d/%m/%Y')
 
     url = f'https://www.cbr.ru/scripts/xml_metall.asp?date_req1={yesterday}&date_req2={today}'
-    
-    r = requests.get(url) # fix if holiday
+    for t in range(2):
+        r = requests.get(url)
+        if r.status_code != 502:
+            break
+        await asyncio.sleep(3)
+
     content = xmltodict.parse(r.text)
-    
     full = len(content['Metall']['Record']) > 4
     
     l = 0
@@ -135,7 +144,12 @@ async def parsing_finance(nothing):
         for k in tickers['yahoo'][i]:
             ticker = tickers['yahoo'][i][k]
             url = yurl.format(ticker)
-            r = requests.get(url=url, headers=user_agent_headers)
+            for t in range(2):
+                r = requests.get(url=url, headers=user_agent_headers)
+                if r.status_code != 502:
+                    break
+                await asyncio.sleep(3)
+            
             content = json.loads(r.text)
             timestamps = content['chart']['result'][0]['timestamp']
             n = 0
@@ -162,6 +176,7 @@ async def parsing_finance(nothing):
             data[i]['values'][k] = {'val': val, 'pr_val': pr_val, 'str_val': str_val, 'dif': dif, 'str_dif': str_perc, 'len': length}
             
             l = max(length, l)
+            await asyncio.sleep(3)
         data[i]['max_len'] = l
     
     ngf = data['commodities']['values']['Gas']
@@ -178,7 +193,6 @@ async def parsing_finance(nothing):
     str_perc = await dec_place(perc)
     length = len(str_val) + 3
     data['commodities']['values']['Gas'] = {'str_val': str_val, 'dif': dif, 'str_dif': str_perc, 'len': length}
-
 
     rts = await bm(src='finance')
     pr_val = rts['yahoo']['indices']['RTS']['close']
