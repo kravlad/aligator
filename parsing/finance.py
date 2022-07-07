@@ -41,108 +41,43 @@ tickers = {
             'BTC': 'BTC-USD',
             'ETH': 'ETH-USD'
     },
-        'currencies': {'EURUSD': 'EURUSD=X'}
+        'tmp': {'EURUSD': 'EURUSD=X'}
     }
 }
 
 data = {
     'currencies': {'heads': ['Курсы ЦБ РФ','','₽','₽'], 'max_len': 0, 'values': {}},
     'metals': {'heads': ['Драгоценные металлы','','₽','%'], 'max_len': 0, 'values': {}},
-    'crypto': {'heads': ['Крипто','$','','%'], 'max_len': 0, 'values': {}},
     'commodities': {'heads': ['Товары'], 'max_len': 0, 'values': {}},
     'indices': {'heads': ['Индексы','','','%'], 'max_len': 0, 'values': {}},
-    'Brent': {'heads': ['','$','','%'], 'max_len': 0, 'values': {}},
-    'Gas': {'heads': ['','€','','%'], 'max_len': 0, 'values': {}}
+    'crypto': {'heads': ['Крипто','$','','%'], 'max_len': 0, 'values': {}},
+    'Brent': {'heads': ['','$','','%'], 'max_len': 0, 'values': None},
+    'Gas': {'heads': ['','€','','%'], 'max_len': 0, 'values': None},
+    'tmp': {'heads': ['','€','','%'], 'max_len': 0, 'values': {}}
 }
-
 
 
 async def making(data):
     msg = ''
     for i in data:
-        title = spr[i][0]
-        msg = f'{msg}\n{title}:\n'
-        for k in data[i]:
-            obj = data[i][k]
-            sign = await get_balls(obj['dif'])
-            msg = '{}{}<pre>{} {}{}{} ({}{})</pre>\n'.format(msg, sign, k, spr.get(k, spr[i])[1], obj['str_val'], spr.get(k, spr[i])[2], obj['str_dif'], spr.get(k, spr[i])[3])
+        if data[i].get('values'):
+            title = '<pre>{}</pre>'.format(data[i]['heads'][0])
+            msg = f'{msg}\n{title}:\n'
+            for k in data[i]['values']:
+                obj = data[i]['values'][k]
+                sign = await get_balls(obj['dif'])
+                length = data[i]['max_len'] - obj['len'] + len(k)
+                msg = '{}{}<pre>{} {}{}{} ({}{})</pre>\n'.format(msg, sign, k.ljust(length, ' '), data.get(k, data[i])['heads'][1], obj['str_val'], data.get(k, data[i])['heads'][2], obj['str_dif'], data.get(k, data[i])['heads'][3])
     
     head = 'cbr.ru / yahoo.com | #финансы'
     msg = f'{head}\n{msg}\n{head}'
     
-    
-    
-    
-    
-    
-    
-    
-    
-    # inds = {}
-    # for i in data:
-    #     for j in data[i]:
-    #         ind = 0
-    #         for k in data[i][j]:
-    #             try:
-    #                 ind = max(ind, data[i][j][k]['len'])
-    #             except:
-    #                 pass
-    #         inds[j] = ind
-
-    # msg = '\nКурсы ЦБ РФ:\n'
-    # for item in ['USD', 'EUR', 'GBP', 'CNY']:
-    #     obj = data['cbr']['curency'][item]
-    #     sign = await get_balls(obj['dif'])
-    #     msg = '{}{}<pre>{} {} ₽ ({} ₽)</pre>\n'.format(msg, sign, item, obj['str_val'], obj['str_dif'])
-    
-    # msg = msg + '\nДрагоценные металлы:\n'
-    # for item in data['cbr']['metals']:
-    #     obj = data['cbr']['metals'][item]
-    #     sign = await get_balls(obj['dif'])
-    #     ind = inds['metals'] - obj['len'] + len(item)
-    #     msg = msg + sign + '<pre>' + item.ljust(ind, ' ') + ' ' + obj['str_val'] + ' ₽ (' + obj['str_perc'] + '%)</pre>\n'
-        
-    # curencies = {
-    #     'Brent': ' $',
-    #     'Gas': ' €'
-    # }
-    
-    # msg = msg + '\nТовары:\n'
-    # for item in data['yahoo']['commodities']:
-    #     obj = data['yahoo']['commodities'][item]
-    #     sign = await get_balls(obj['dif'])
-    #     ind = inds['commodities'] - obj['len'] + len(item)
-    #     msg = msg + sign + '<pre>' + item.ljust(ind, ' ') + curencies[item] + obj['str_val'] + ' (' + obj['str_perc'] + '%)</pre>\n'
-        
-    # msg = msg + '\nИндексы:\n'
-    # for item in data['yahoo']['indices']:
-    #     obj = data['yahoo']['indices'][item]
-    #     sign = await get_balls(obj['dif'])
-    #     ind = inds['indices'] - obj['len'] + len(item)
-    #     msg = msg + sign + '<pre>' + item.ljust(ind, ' ') + ' ' + obj['str_val'] + ' (' + obj['str_perc'] + '%)</pre>\n'
-        
-    # msg = msg + '\nКрипто:\n'
-    # for item in data['yahoo']['crypto']:
-    #     obj = data['yahoo']['crypto'][item]
-    #     sign = await get_balls(obj['dif'])
-    #     ind = inds['crypto'] - obj['len'] + len(item)
-    #     msg = msg + sign + '<pre>' + item.ljust(ind, ' ') + ' $' + obj['str_val'] + ' (' + obj['str_perc'] + '%)</pre>\n'
-        
     return [msg]
 
-
-
-
-
-
-
-async def parsing_finance(nothing):    
-    head = 'finance'
-    # data = {'currencies': {'sets': {}, 'values': {}}, 'metals': {'Золото': {}, 'Серебро': {}, 'Платина': {}, 'Палладий': {}}, 'crypto': {}, 'commodities': {}, 'indices': {}, 'currencies': {}}
-    
+async def parsing_finance(nothing):        
     r = requests.get('https://www.cbr-xml-daily.ru/daily_json.js')
     content = json.loads(r.text)
-    plength = 0
+    l = 0
     for i in tickers['cbr-xml-daily']['currencies']:
         val = content['Valute'][i]['Value']
         pr_val = content['Valute'][i]['Previous']
@@ -157,8 +92,7 @@ async def parsing_finance(nothing):
             'len': length
         }
         
-        l = max(length, plength)
-        plength = length
+        l = max(length, l)
     data['currencies']['max_len'] = l
     
     date = datetime.now()
@@ -172,7 +106,7 @@ async def parsing_finance(nothing):
     
     full = len(content['Metall']['Record']) > 4
     
-    plength = 0
+    l = 0
     for i in tickers['cbr']['metals']:
         k = tickers['cbr']['metals'][i][0]
         j = tickers['cbr']['metals'][i][1]
@@ -193,12 +127,11 @@ async def parsing_finance(nothing):
             'str_dif': str_perc,
             'len': length
         }
-        l = max(length, plength)
-        plength = length
+        l = max(length, l)
     data['metals']['max_len'] = l
 
     for i in tickers['yahoo']:
-        plength = 0
+        l = 0
         for k in tickers['yahoo'][i]:
             ticker = tickers['yahoo'][i][k]
             url = yurl.format(ticker)
@@ -225,25 +158,29 @@ async def parsing_finance(nothing):
             perc = round(diff / pr_val * 100, 2)
             str_perc = await dec_place(perc)
             
-            length = len(ticker) + len(str_val)
+            length = len(k) + len(str_val)
             data[i]['values'][k] = {'val': val, 'pr_val': pr_val, 'str_val': str_val, 'dif': dif, 'str_dif': str_perc, 'len': length}
             
-            l = max(length, plength)
-            plength = length
+            l = max(length, l)
         data[i]['max_len'] = l
     
     ngf = data['commodities']['values']['Gas']
-    eurusd = data['currencies']['values']['EURUSD']['val']
+    eurusd = data['tmp']['values']['EURUSD']['val']
     val = ngf['val'] / 0.02802113521 / eurusd
     pr_val = ngf['pr_val'] / 0.02802113521 / eurusd
-    data['commodities']['values']['Gas']['val'] = val
-    data['commodities']['values']['Gas']['pr_val'] = pr_val
+    # data['commodities']['values']['Gas']['val'] = val
+    # data['commodities']['values']['Gas']['pr_val'] = pr_val
+
+    r_val = round(val, 2)
+    str_val = await dec_place(r_val)
+    dif = round(val - pr_val, 2)
+    perc = round((val - pr_val) / pr_val * 100, 2)
+    str_perc = await dec_place(perc)
+    length = len(str_val) + 3
+    data['commodities']['values']['Gas'] = {'str_val': str_val, 'dif': dif, 'str_dif': str_perc, 'len': length}
+
 
     rts = await bm(src='finance')
-
-    # with open('tmp/finance.json', 'r') as f:
-    #     rts = json.load(f)
-    
     pr_val = rts['yahoo']['indices']['RTS']['close']
     
     url = yurl.format('RTSI.ME')
@@ -252,20 +189,16 @@ async def parsing_finance(nothing):
     val = content['chart']['result'][0]['indicators']['quote'][0]['close'][0]
     
     rts['yahoo']['indices']['RTS'] = {'pr_close': pr_val, 'close': val}
-    
     await bm(src='finance', data=rts)
 
-    # with open('tmp/finance.json', 'w') as f:
-    #     rts = json.dump(rts, f)
-    
-    val = round(val, 2)
-    str_val = await dec_place(val)
+    r_val = round(val, 2)
+    str_val = await dec_place(r_val)
     dif = round(val - pr_val, 2)
     perc = round((val - pr_val) / pr_val * 100, 2)
     str_perc = await dec_place(perc)
     length = len(str_val) + 3
     data['indices']['values']['RTS'] = {'str_val': str_val, 'dif': dif, 'str_dif': str_perc, 'len': length}
-    data['currencies']['values'].pop('EURUSD')
+    data.pop('tmp')
 
     msgs = await making(data)
     await sending(msgs,forward=opsp_chan)
