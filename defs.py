@@ -51,40 +51,32 @@ async def dec_place(num):
     return val
 
 
-async def send_telegram(text: str, chat_id=news_chan, forward=None):
+async def send_telegram(text: str, chat_id=news_chan, forward=None, parse_mode='HTML', ok=True):
     method = f'https://api.telegram.org/bot{token}/sendMessage'
-
-    r = requests.post(method, data={
-        "chat_id": chat_id,
-        "text": text,
-        'parse_mode': 'HTML',
-        'disable_web_page_preview': True,
-        'disable_notification': True
-        })
-
-    if r.status_code != 200:
-        requests.post(method, data={
-                                "chat_id": log_chan,
-                                "text": r.text,
-                                'parse_mode': 'HTML',
-                                'disable_web_page_preview': True,
-                                'disable_notification': True
-        })
-        asyncio.sleep(1)
-        requests.post(method, data={
-                                "chat_id": log_chan,
-                                "text": text,
-                                'disable_web_page_preview': True,
-                                'disable_notification': True
-        })
-        # save_bm(sets['file_cfg']['bm_path']['telegram'])
-        # raise Exception(r.text)
+    for i in range(3):
+        r = requests.post(method, data={
+            "chat_id": chat_id,
+            "text": text,
+            'parse_mode': parse_mode,
+            'disable_web_page_preview': True,
+            'disable_notification': True
+            })
+        if r.status_code == 200 and ok:
+            if forward:
+                data = r.json()
+                message_id = data['result']['message_id']
+                chat_id = data['result']['chat']['id']
+                await frwd_telegram(message_id, forward, chat_id)
+            break
+        elif r.status_code == 200 and not ok:
+            text = origin_text
+        else:
+            ok = False
+            parse_mode = None
+            chat_id = log_chan
+            origin_text = text
+            text = r.text
     
-    if forward:
-        data = r.json()
-        message_id = data['result']['message_id']
-        chat_id = data['result']['chat']['id']
-        await frwd_telegram(message_id, forward, chat_id)
 
 async def save_bm(src):
     confile = f'{bm_path}{src}.json'
@@ -173,12 +165,9 @@ async def frwd_telegram(message_id, chat_id=opsp_chan, from_chat_id=summ_chan):
         })
 
     if r.status_code != 200:
-        requests.post(method, data={
-                                "chat_id": log_chan,
-                                "text": r.text,
-                                'parse_mode': 'HTML',
-                                'disable_web_page_preview': True,
-                                'disable_notification': True
-        })
-        save_bm(sets['file_cfg']['bm_path']['telegram'])
-        raise Exception(r.text)
+        text = json.loads(r.text)
+        text.update({'from_chat_id': 'https://t.me/c/{}'.format(str(from_chat_id)[3:]), 
+                    'chat_id': 'https://t.me/c/{}'.format(str(chat_id)[3:]),
+                    'message_id': message_id,
+                    'link': 'https://t.me/c/{}/{}'.format(str(chat_id)[3:], message_id)})
+        await send_telegram(text=str(text), chat_id=log_chan, parse_mode=None)

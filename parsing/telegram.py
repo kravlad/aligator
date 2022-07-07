@@ -33,7 +33,7 @@ async def parsing_tg(sources):
     j = 0
     for source in sources:
         # print(source)
-        for k in range(2):
+        for k in range(3):
             r = requests.get(tg_link + 's/' + source)
             if r.status_code != 502:
                 break

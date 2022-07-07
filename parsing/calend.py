@@ -55,7 +55,7 @@ async def parsing_calend(nothing):
         data = {}
         chapts = {}
         for page in p:
-            for i in range(2):
+            for i in range(3):
                 r = requests.get(f'{website}/{page}/{str_date}')
                 if r.status_code != 502:
                     break

@@ -22,7 +22,7 @@ async def parsing_rbc(sources):
             last_id = bookmarks[chapt]['bookmark']
             website = cfg.urls['rbc'][chapt]
 
-            for k in range(2):
+            for k in range(3):
                 r = requests.get(website)
                 if r.status_code != 502:
                     break

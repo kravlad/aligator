@@ -14,7 +14,7 @@ async def parsing_kinonews(nothing):
     last_id = bookmarks['bookmarks'][source]
     website = cfg.urls[source]['website']
 
-    for k in range(2):
+    for k in range(3):
         r = requests.get(website + cfg.urls[source]['url'])
         if r.status_code != 502:
             break
