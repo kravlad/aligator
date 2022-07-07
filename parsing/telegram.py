@@ -74,11 +74,17 @@ async def parsing_tg(sources):
                             await daily({source: {msg_id: data[source][msg_id]}}, head)
                             data[source][msg_id]['publish'] = False
         
+        
         sorted_tuple = sorted(data[source].items(), key=lambda x: x[0])
         data[source] = dict(sorted_tuple)
 
         # all_ids.sort()
         m_ids = list(data[source].keys())
+        
+        if (m_ids[-1] - last_id) < 5:
+            data.pop(source)
+            continue
+        
         if m_ids:
             # print(m_ids[0], ' - ', m_ids[-1])
             if all_ids[0] > last_id:
