@@ -54,13 +54,20 @@ async def dec_place(num):
 async def send_telegram(text: str, chat_id=news_chan, forward=None, parse_mode='HTML', ok=True):
     method = f'https://api.telegram.org/bot{token}/sendMessage'
     for i in range(3):
-        r = requests.post(method, data={
-            "chat_id": chat_id,
-            "text": text,
-            'parse_mode': parse_mode,
-            'disable_web_page_preview': True,
-            'disable_notification': True
-            })
+        for i in range(5):
+            try:
+                r = requests.post(method, data={
+                "chat_id": chat_id,
+                "text": text,
+                'parse_mode': parse_mode,
+                'disable_web_page_preview': True,
+                'disable_notification': True
+                })
+            except requests.exceptions.ConnectionError as e:
+                print(e)
+                continue
+            else:
+                break
         if r.status_code == 200 and ok:
             if forward:
                 data = r.json()

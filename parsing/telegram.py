@@ -48,7 +48,8 @@ async def parsing_tg(kwargs):
             content = soup.find_all('div', class_= 'tgme_widget_message_wrap')
             if len(content) > 0:
                 source = source.split('?')[0]
-                last_id = bookmarks['bookmarks'][source]
+                last_id = bookmarks['bookmarks']['regular'][source]
+                last_daily_id = bookmarks['bookmarks']['daily'][source]
                 if not data.get(source):
                     data[source] = {}
                 all_ids = []
@@ -75,11 +76,11 @@ async def parsing_tg(kwargs):
                                 (source == 'tele_eve' and '#главноезаночь' in html_text):
                                 # (source == 'theinsider' and header.startswith('Главное за день')) or \
                                 
-                                if dayly_chat_id:
+                                if dayly_chat_id and (msg_id > last_daily_id):
                                     head = f'@{source} | #{source} | #главное'
-                                    await daily({source: {msg_id: data[source][msg_id]}}, dayly_chat_id, head, params.get('dayly_frwd'),)
+                                    await daily({source: {msg_id: data[source][msg_id]}}, dayly_chat_id, head, params.get('dayly_frwd'))
+                                    bookmarks['bookmarks']['daily'][source] = msg_id
                                 data[source][msg_id]['publish'] = False
-            
             
             sorted_tuple = sorted(data[source].items(), key=lambda x: x[0])
             data[source] = dict(sorted_tuple)
@@ -97,7 +98,7 @@ async def parsing_tg(kwargs):
                     sources.insert(j + 1, f'{source}?before={m_ids[0]}')
                     # sources.append(f'{source}?before={m_ids[0]}')
                 else:
-                    bookmarks['bookmarks'][source] = m_ids[-1]
+                    bookmarks['bookmarks']['regular'][source] = m_ids[-1]
                 
             j += 1
             await asyncio.sleep(3)

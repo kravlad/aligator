@@ -52,7 +52,7 @@ if __name__ == "__main__":
     # test = {"parse": {"kinonews": []}}
     # test = {"parse": {"calend": []}}
     test = {"parse": {"telegram": {'sources': [
-                                "meduzalive",
+                                # "meduzalive",
                                 "svtvnews",
     #                             "theinsider",
     #                             "proektproekt",
