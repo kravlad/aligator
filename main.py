@@ -1,7 +1,7 @@
 import asyncio
 # from apscheduler.schedulers.asyncio import AsyncIOScheduler # pip3 install apscheduler
 
-from defs import bm, save_bm
+from defs import bm, save_bm, news_chan, opsp_chan, summ_chan
 from parsing.telegram import parsing_tg
 from parsing.intermedia import parsing_intermedia
 from parsing.kinonews import parsing_kinonews
@@ -42,7 +42,7 @@ def handler(event={}, context=None):
 
 
 if __name__ == "__main__":
-    test = {"parse": {"finance": []}}
+    # test = {"parse": {"finance": []}}
     # test = {"parse": {"intermedia": []}}
     # test = {"parse": {"rbc": {
     #                     "finec": ["economy","finance"],
@@ -51,9 +51,9 @@ if __name__ == "__main__":
     #         }}}
     # test = {"parse": {"kinonews": []}}
     # test = {"parse": {"calend": []}}
-    # test = {"parse": {"telegram": [
-    #                             "meduzalive",
-    #                             "svtvnews",
+    test = {"parse": {"telegram": {'sources': [
+                                "meduzalive",
+                                "svtvnews",
     #                             "theinsider",
     #                             "proektproekt",
     #                             "agentstvonews",
@@ -64,7 +64,7 @@ if __name__ == "__main__":
     #                             "tvrain",
     #                             "novaya_pishet",
                                 # "tele_eve"
-                                # ]}}
+                                ], 'params': {'chat_id': news_chan, 'dayly_chat_id': summ_chan, 'dayly_frwd': opsp_chan}}}}
     # test = {"get_bm": {"telegram": {
     #                 "meduzalive": 63275,
     #                 "svtvnews": 10410
