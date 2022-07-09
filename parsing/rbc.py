@@ -3,7 +3,7 @@ from datetime import datetime
 from bs4 import BeautifulSoup # pip3 install bs4
 
 import config as cfg
-from defs import bm, making, sending
+from defs import bm, making, sending, envs
 
 hashtags = {
             'finec': 'финансы',
@@ -22,7 +22,7 @@ async def parsing_rbc(sources):
             last_id = bookmarks[chapt]['bookmark']
             website = cfg.urls['rbc'][chapt]
 
-            for k in range(2):
+            for k in range(3):
                 r = requests.get(website)
                 if r.status_code != 502:
                     break
@@ -57,5 +57,5 @@ async def parsing_rbc(sources):
             data[source] = dict(sorted_data)
                 
             head = 'rbc.ru | #рбк | #{}'.format(hashtags[source])
-            msgs = await making(data, head=head, header=False)
-            await sending(msgs)
+            msgs = await making(data, head=head, header=False, footer=envs['news_footer'])
+            await sending(msgs, chat_id=envs['news_chan'])

@@ -7,7 +7,7 @@ import xmltodict
 from datetime import datetime, timedelta
 
 import config as cfg
-from defs import summ_chan, bm, dec_place, sending, opsp_chan, get_balls
+from defs import dec_place, sending, get_balls, envs
 
 user_agent_headers = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
@@ -23,16 +23,19 @@ tickers = {
                 'Золото': [4,0],
                 'Серебро': [5,1],
                 'Платина': [6,2],
-                'Палладий': [7,3],
-        }},        
+                'Палладий': [7,3]
+        }},
+    'moex': {
+        'indices': {
+                    'ММВБ': 'IMOEX',
+                    'РТС': 'RTSI'
+        }},
     'yahoo': {
         'commodities': {
                     'Brent': 'BZ=F',
                     'Gas': 'NG=F'
         },
         'indices': {
-                    'ММВБ': 'IMOEX.ME',
-                    'RTS': 'GOOG', # no hist data
                     'S&P 500': '%5EGSPC',
                     'Dow Jones': '%5EDJI',
                     'Nasdaq': '%5EIXIC',
@@ -57,7 +60,6 @@ data = {
     'tmp': {'heads': ['','€','','%'], 'max_len': 0, 'values': {}}
 }
 
-
 async def making(data):
     msg = ''
     for i in data:
@@ -66,17 +68,20 @@ async def making(data):
             msg = f'{msg}\n{title}:\n'
             for k in data[i]['values']:
                 obj = data[i]['values'][k]
-                sign = await get_balls(obj['dif'])
+                link = obj['link']
+                ball = await get_balls(obj['dif'])
+                sign = f'<a href="{link}">{ball}</a>'
                 length = data[i]['max_len'] - obj['len'] + len(k)
                 msg = '{}{}<pre>{} {}{}{} ({}{})</pre>\n'.format(msg, sign, k.ljust(length, ' '), data.get(k, data[i])['heads'][1], obj['str_val'], data.get(k, data[i])['heads'][2], obj['str_dif'], data.get(k, data[i])['heads'][3])
     
     head = 'cbr.ru / yahoo.com | #финансы'
-    msg = f'{head}\n{msg}\n{head}'
+    footer = envs['summ_footer']
+    msg = f'{head}\n{msg}\n{head}\n@{footer}'
     
     return [msg]
 
 async def parsing_finance(nothing):   
-    for t in range(2):
+    for t in range(3):
         r = requests.get('https://www.cbr-xml-daily.ru/daily_json.js')
         if r.status_code != 502:
             break
@@ -95,7 +100,8 @@ async def parsing_finance(nothing):
             'str_val': str_val,
             'dif': dif,
             'str_dif': str_dif,
-            'len': length
+            'len': length,
+            'link': 'https://www.cbr.ru/currency_base/daily/'
         }
         
         l = max(length, l)
@@ -106,7 +112,7 @@ async def parsing_finance(nothing):
     yesterday = (date - timedelta(hours=24)).strftime('%d/%m/%Y')
 
     url = f'https://www.cbr.ru/scripts/xml_metall.asp?date_req1={yesterday}&date_req2={today}'
-    for t in range(2):
+    for t in range(3):
         r = requests.get(url)
         if r.status_code != 502:
             break
@@ -134,17 +140,49 @@ async def parsing_finance(nothing):
             'str_val': str_val,
             'dif': dif,
             'str_dif': str_perc,
-            'len': length
+            'len': length,
+            'link': 'https://www.cbr.ru/hd_base/metall/metall_base_new'
         }
         l = max(length, l)
     data['metals']['max_len'] = l
+
+
+    date1 = (date - timedelta(weeks=2)).strftime('%Y-%m-%d')
+    date2 = date.strftime('%Y-%m-%d')
+    for i in tickers['moex']['indices']:
+        t = tickers['moex']['indices'][i]
+        url = f'https://iss.moex.com/iss/history/engines/stock/markets/index/securities/{t}.json?from={date1}&till={date2}'
+        for p in range(3):
+            r = requests.get(url)
+            if r.status_code != 502:
+                break
+            await asyncio.sleep(3)
+
+        content = r.json()
+        val = content['history']['data'][-1][5]
+        val_date = content['history']['data'][-1][2]
+        pr_val = content['history']['data'][-2][5]
+        pr_val_date = content['history']['data'][-2][2]
+        
+        dif = round(val - pr_val, 2)
+        perc = round((val - pr_val) / pr_val * 100, 2)
+        str_val = await dec_place(round(val, 2))
+        str_perc = await dec_place(perc)
+        length = len(i) + len(str_val)
+        data['indices']['values'][i] = {
+            'str_val': str_val,
+            'dif': dif,
+            'str_dif': str_perc,
+            'len': length,
+            'link': f'https://www.moex.com/ru/index/{t}'
+        }
 
     for i in tickers['yahoo']:
         l = 0
         for k in tickers['yahoo'][i]:
             ticker = tickers['yahoo'][i][k]
             url = yurl.format(ticker)
-            for t in range(2):
+            for t in range(3):
                 r = requests.get(url=url, headers=user_agent_headers)
                 if r.status_code != 502:
                     break
@@ -173,7 +211,14 @@ async def parsing_finance(nothing):
             str_perc = await dec_place(perc)
             
             length = len(k) + len(str_val)
-            data[i]['values'][k] = {'val': val, 'pr_val': pr_val, 'str_val': str_val, 'dif': dif, 'str_dif': str_perc, 'len': length}
+            data[i]['values'][k] = {'val': val,
+                                    'pr_val': pr_val,
+                                    'str_val': str_val,
+                                    'dif': dif,
+                                    'str_dif': str_perc,
+                                    'len': length,
+                                    'link': f'https://finance.yahoo.com/quote/{ticker}'
+                                    }
             
             l = max(length, l)
             await asyncio.sleep(3)
@@ -183,8 +228,6 @@ async def parsing_finance(nothing):
     eurusd = data['tmp']['values']['EURUSD']['val']
     val = ngf['val'] / 0.02802113521 / eurusd
     pr_val = ngf['pr_val'] / 0.02802113521 / eurusd
-    # data['commodities']['values']['Gas']['val'] = val
-    # data['commodities']['values']['Gas']['pr_val'] = pr_val
 
     r_val = round(val, 2)
     str_val = await dec_place(r_val)
@@ -192,27 +235,9 @@ async def parsing_finance(nothing):
     perc = round((val - pr_val) / pr_val * 100, 2)
     str_perc = await dec_place(perc)
     length = len(str_val) + 3
-    data['commodities']['values']['Gas'] = {'str_val': str_val, 'dif': dif, 'str_dif': str_perc, 'len': length}
+    data['commodities']['values']['Gas'].update({'str_val': str_val, 'dif': dif, 'str_dif': str_perc, 'len': length})
 
-    rts = await bm(src='finance')
-    pr_val = rts['yahoo']['indices']['RTS']['close']
-    
-    url = yurl.format('RTSI.ME')
-    r = requests.get(url=url, headers=user_agent_headers)
-    content = json.loads(r.text)
-    val = content['chart']['result'][0]['indicators']['quote'][0]['close'][0]
-    
-    rts['yahoo']['indices']['RTS'] = {'pr_close': pr_val, 'close': val}
-    await bm(src='finance', data=rts)
-
-    r_val = round(val, 2)
-    str_val = await dec_place(r_val)
-    dif = round(val - pr_val, 2)
-    perc = round((val - pr_val) / pr_val * 100, 2)
-    str_perc = await dec_place(perc)
-    length = len(str_val) + 3
-    data['indices']['values']['RTS'] = {'str_val': str_val, 'dif': dif, 'str_dif': str_perc, 'len': length}
     data.pop('tmp')
 
     msgs = await making(data)
-    await sending(msgs,forward=opsp_chan)
+    await sending(msgs, chat_id=envs['summ_chan'], forward=envs['opsp_chan'])
