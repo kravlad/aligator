@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 
 import config as cfg
-from defs import sending, opsp_chan
+from defs import sending, envs
 
 website = cfg.urls['calend']['url']
 date = datetime.now() - timedelta(hours=24)
@@ -46,7 +46,8 @@ async def making(data):
                     item = f'{html_b_year}{html_d_year} {text}\n'
                 msg = f'{msg}{item}'
     if msg:
-        msg = f'\n\n{head}{msg}\n{head}@rusmsp'
+        footer = envs['summ_footer']
+        msg = f'\n\n{head}{msg}\n{head}@{footer}'
     return msg
 
 async def parsing_calend(nothing):    
@@ -105,4 +106,4 @@ async def parsing_calend(nothing):
     for d in datas:
         msg = await making(d)
         msgs.append(msg)
-    await sending(msgs, forward=opsp_chan)
+    await sending(msgs, chat_id=envs['summ_chan'], forward=envs['opsp_chan'])

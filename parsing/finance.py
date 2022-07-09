@@ -7,7 +7,7 @@ import xmltodict
 from datetime import datetime, timedelta
 
 import config as cfg
-from defs import summ_chan, bm, dec_place, sending, opsp_chan, get_balls
+from defs import dec_place, sending, get_balls, envs
 
 user_agent_headers = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
@@ -60,7 +60,6 @@ data = {
     'tmp': {'heads': ['','€','','%'], 'max_len': 0, 'values': {}}
 }
 
-
 async def making(data):
     msg = ''
     for i in data:
@@ -76,7 +75,8 @@ async def making(data):
                 msg = '{}{}<pre>{} {}{}{} ({}{})</pre>\n'.format(msg, sign, k.ljust(length, ' '), data.get(k, data[i])['heads'][1], obj['str_val'], data.get(k, data[i])['heads'][2], obj['str_dif'], data.get(k, data[i])['heads'][3])
     
     head = 'cbr.ru / yahoo.com | #финансы'
-    msg = f'{head}\n{msg}\n{head}'
+    footer = envs['summ_footer']
+    msg = f'{head}\n{msg}\n{head}\n@{footer}'
     
     return [msg]
 
@@ -177,7 +177,6 @@ async def parsing_finance(nothing):
             'link': f'https://www.moex.com/ru/index/{t}'
         }
 
-
     for i in tickers['yahoo']:
         l = 0
         for k in tickers['yahoo'][i]:
@@ -229,8 +228,6 @@ async def parsing_finance(nothing):
     eurusd = data['tmp']['values']['EURUSD']['val']
     val = ngf['val'] / 0.02802113521 / eurusd
     pr_val = ngf['pr_val'] / 0.02802113521 / eurusd
-    # data['commodities']['values']['Gas']['val'] = val
-    # data['commodities']['values']['Gas']['pr_val'] = pr_val
 
     r_val = round(val, 2)
     str_val = await dec_place(r_val)
@@ -243,4 +240,4 @@ async def parsing_finance(nothing):
     data.pop('tmp')
 
     msgs = await making(data)
-    await sending(msgs,forward=opsp_chan)
+    await sending(msgs, chat_id=envs['summ_chan'], forward=envs['opsp_chan'])

@@ -6,15 +6,14 @@ from datetime import datetime
 # from apscheduler.schedulers.asyncio import AsyncIOScheduler # pip3 install apscheduler
 
 import config as cfg
-from defs import summ_chan, replacing, send_telegram, bm, making, sending, opsp_chan, news_chan
+from defs import replacing, send_telegram, bm, making, sending, envs
 
 # scheduler = AsyncIOScheduler(daemon=True)
 tg_link = cfg.urls['telegram']
 replacement = cfg.replacement['telegram']
 
-
 async def daily(data, chat_id, head, frwd=None):
-    msgs = await making(data, head=head, header=False, footer='rusmsp')
+    msgs = await making(data, head=head, header=False, footer=envs['summ_footer'])
     await sending(msgs, chat_id, forward=frwd)
     # run_date = datetime.now() + timedelta(minutes=10)
     # scheduler.add_job(sending,
@@ -82,15 +81,15 @@ async def parsing_tg(kwargs):
                                     bookmarks['bookmarks']['daily'][source] = msg_id
                                 data[source][msg_id]['publish'] = False
             
+            if len(data[source]) < 5:
+                data.pop(source)
+                continue
+            
             sorted_tuple = sorted(data[source].items(), key=lambda x: x[0])
             data[source] = dict(sorted_tuple)
 
             # all_ids.sort()
             m_ids = list(data[source].keys())
-            
-            # if (m_ids[-1] - last_id) < 5:
-            #     data.pop(source)
-            #     continue
             
             if m_ids:
                 # print(m_ids[0], ' - ', m_ids[-1])
@@ -111,6 +110,6 @@ async def parsing_tg(kwargs):
         
         for m in data.keys():
             head = f'@{m} | #{m} | #новости'
-            msg = await making({m: data[m]}, head)
+            msg = await making({m: data[m]}, head, footer=envs['news_footer'])
             # msgs.append(msg)
             await sending(msg, chat_id=chat_id)

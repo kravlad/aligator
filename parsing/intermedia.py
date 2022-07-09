@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 
 import config as cfg
-from defs import bm, making, sending
+from defs import bm, making, sending, envs
 
 async def parsing_intermedia(nothing):
     source = 'intermedia'
@@ -46,5 +46,5 @@ async def parsing_intermedia(nothing):
         data[source] = dict(sorted_data)
         
         head = 'intermedia.ru | #intermedia | #музыка'
-        msgs = await making(data, head=head, header=False)
-        await sending(msgs)
+        msgs = await making(data, head=head, header=False, footer=envs['news_footer'])
+        await sending(msgs, chat_id=envs['news_chan'])

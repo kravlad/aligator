@@ -5,7 +5,7 @@ from datetime import datetime
 
 # import tools.mongodb as db
 import config as cfg
-from defs import bm, making, sending, opsp_chan
+from defs import bm, making, sending, envs
 # import defs.common as common
 
 async def parsing_kinonews(nothing):
@@ -47,5 +47,5 @@ async def parsing_kinonews(nothing):
         data[source] = dict(sorted_data)
         
         head = 'kinonews.ru | #kinonews | #кино'
-        msgs = await making(data, head=head, header=False)
-        await sending(msgs)
+        msgs = await making(data, head=head, header=False, footer=envs['news_footer'])
+        await sending(msgs, chat_id=envs['news_chan'])
