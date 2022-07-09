@@ -1,13 +1,13 @@
 import asyncio
 # from apscheduler.schedulers.asyncio import AsyncIOScheduler # pip3 install apscheduler
 
-from defs import bm, save_bm, envs
-from parsing.telegram import parsing_tg
-from parsing.intermedia import parsing_intermedia
-from parsing.kinonews import parsing_kinonews
-from parsing.calend import parsing_calend
-from parsing.rbc import parsing_rbc
-from parsing.finance import parsing_finance
+from defs import bm, save_bm
+from parsers.telegram import parsing_tg
+from parsers.intermedia import parsing_intermedia
+from parsers.kinonews import parsing_kinonews
+from parsers.calend import parsing_calend
+from parsers.rbc import parsing_rbc
+from parsers.finance import parsing_finance
 
 funcs = {
     'telegram': parsing_tg,
@@ -44,15 +44,15 @@ def handler(event={}, context=None):
 if __name__ == "__main__":
     # test = {"parse": {"finance": []}}
     # test = {"parse": {"intermedia": []}}
-    test = {"parse": {"rbc": {
+    # test = {"parse": {"rbc": {
                         # "finec": ["economy","finance"],
                         # "business": ["business"],
-                        "politic": ["politic"]
-            }}}
+            #             "politic": ["politic"]
+            # }}}
     # test = {"parse": {"kinonews": []}}
     # test = {"parse": {"calend": []}}
-    # test = {"parse": {"telegram": {'sources': [
-                                # "meduzalive",
+    test = {"parse": {"telegram": {'sources': [
+                                "meduzalive",
                                 # "svtvnews",
     #                             "theinsider",
     #                             "proektproekt",
@@ -64,9 +64,9 @@ if __name__ == "__main__":
     #                             "tvrain",
     #                             "novaya_pishet",
                                 # "tele_eve"
-                                # ], 'params': {'chat_id': envs['news_chan'], 
-                                #             'dayly_chat_id': envs['summ_chan'], 
-                                #             'dayly_frwd': envs['opsp_chan']}}}}
+                                ], 'params': {'chat_id': 'news_chan', 
+                                            'dayly_chat_id': 'summ_chan', 
+                                            'dayly_frwd': 'opsp_chan'}}}}
     # test = {"get_bm": {"telegram": {
     #                 "meduzalive": 63275,
     #                 "svtvnews": 10410
