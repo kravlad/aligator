@@ -27,13 +27,13 @@ async def daily(data, chat_id, head, frwd=None):
 
 async def parsing_tg(kwargs):
     params = kwargs.get('params', {})
-    chat_id = params.get('chat_id')
+    chat_id = envs.get(params.get('chat_id'))
     if chat_id:
         bookmarks = await bm(src='telegram')
         # sources = list(bookmarks.keys())
         data = {}
         j = 0
-        dayly_chat_id = params.get('dayly_chat_id')
+        dayly_chat_id = envs.get(params.get('dayly_chat_id'))
         sources = kwargs['sources']
         for source in sources:
             # print(source)
@@ -48,7 +48,7 @@ async def parsing_tg(kwargs):
             if len(content) > 0:
                 source = source.split('?')[0]
                 last_id = bookmarks['bookmarks']['regular'][source]
-                last_daily_id = bookmarks['bookmarks']['daily'][source]
+                last_daily_id = bookmarks['bookmarks']['daily'].get(source)
                 if not data.get(source):
                     data[source] = {}
                 all_ids = []
@@ -77,7 +77,8 @@ async def parsing_tg(kwargs):
                                 
                                 if dayly_chat_id and (msg_id > last_daily_id):
                                     head = f'@{source} | #{source} | #главное'
-                                    await daily({source: {msg_id: data[source][msg_id]}}, dayly_chat_id, head, params.get('dayly_frwd'))
+                                    dayly_frwd = envs.get(params.get('dayly_frwd'))
+                                    await daily({source: {msg_id: data[source][msg_id]}}, dayly_chat_id, head, dayly_frwd)
                                     bookmarks['bookmarks']['daily'][source] = msg_id
                                 data[source][msg_id]['publish'] = False
             
