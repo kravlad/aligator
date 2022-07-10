@@ -52,7 +52,7 @@ if __name__ == "__main__":
     # test = {"parse": {"kinonews": []}}
     # test = {"parse": {"calend": []}}
     test = {"parse": {"telegram": {'sources': [
-                                "meduzalive",
+    #                             "meduzalive",
                                 # "svtvnews",
     #                             "theinsider",
     #                             "proektproekt",
@@ -63,10 +63,12 @@ if __name__ == "__main__":
     #                             "mediazonalinks",
     #                             "tvrain",
     #                             "novaya_pishet",
+                                "d_code"
                                 # "tele_eve"
                                 ], 'params': {'chat_id': 'news_chan', 
                                             'dayly_chat_id': 'summ_chan', 
-                                            'dayly_frwd': 'opsp_chan'}}}}
+                                            # 'dayly_frwd': 'opsp_chan'
+                                            }}}}
     # test = {"get_bm": {"telegram": {
     #                 "meduzalive": 63275,
     #                 "svtvnews": 10410

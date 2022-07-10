@@ -13,7 +13,7 @@ tg_link = cfg.urls['telegram']
 replacement = cfg.replacement['telegram']
 
 async def daily(data, chat_id, head, frwd=None):
-    msgs = await making(data, head=head, header=False, footer=envs['summ_footer'])
+    msgs = await making(data, head=head, header=False, footer=envs['summ_footer'], dpip='')
     await sending(msgs, chat_id, forward=frwd)
     # run_date = datetime.now() + timedelta(minutes=10)
     # scheduler.add_job(sending,
@@ -49,7 +49,7 @@ async def parsing_tg(kwargs):
             if len(content) > 0:
                 source = source.split('?')[0]
                 last_id = bookmarks['bookmarks']['regular'].get(source, 0)
-                last_daily_id = bookmarks['bookmarks']['daily'].get(source)
+                last_daily_id = bookmarks['bookmarks']['daily'].get(source, 0)
                 if not data.get(source):
                     data[source] = {}
                 all_ids = []
@@ -72,6 +72,7 @@ async def parsing_tg(kwargs):
                             data[source][msg_id] = {'id': msg_id, 'publish': True, 'link': f'{tg_link}{link}', 'header': header, 'html_text': new_text}
                                     
                             if (source == 'svtvnews' and header.startswith('Что случилось')) or \
+                                (source == 'd_code' and '. Немного новостей:' in html_text) or \
                                 (source == 'tele_eve' and '#картинадня' in html_text) or \
                                 (source == 'tele_eve' and '#главноезаночь' in html_text):
                                 # (source == 'theinsider' and header.startswith('Главное за день')) or \

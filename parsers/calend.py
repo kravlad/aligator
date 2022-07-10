@@ -6,7 +6,7 @@ import config as cfg
 from defs import sending, envs
 
 website = cfg.urls['calend']['url']
-date = datetime.now() - timedelta(hours=24)
+date = datetime.now() # - timedelta(hours=24)
 str_date = '{}-{}-{}'.format(date.year, date.month, date.day)
 pips = cfg.pips
 chapts = cfg.urls['calend']['chapts']
@@ -83,15 +83,13 @@ async def parsing_calend(nothing):
                 tmp = item.find('span', {'class': 'title'})
                 link = tmp.contents[0].attrs['href']
                 title = tmp.text
-                if chapt in ['events','births','mourns']:
+                if chapt == 'events':
+                    b_year = item.find('span', {'class': 'year'}).text
+                    d_year = ''
+                elif chapt in ['births','mourns']:
                     b_year = item.find('span', {'class': 'year'}).text.split()[-1]
-                    if chapt != 'events':
-                        tmp = item.find('span', {'class': 'year2'})
-                        d_year = tmp.text if tmp else ''
-                        # years = f'{b_year}{d_year} '
-                    else:
-                        # years = f'{b_year}'
-                        d_year = ''
+                    tmp = item.find('span', {'class': 'year2'})
+                    d_year = tmp.text if tmp else ''
                 else:
                     b_year = ''
                     d_year = ''
