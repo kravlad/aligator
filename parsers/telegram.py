@@ -34,6 +34,7 @@ async def parsing_tg(kwargs):
         data = {}
         j = 0
         dayly_chat_id = envs.get(params.get('dayly_chat_id'))
+        limit = params.get('limit', -1)
         sources = kwargs['sources']
         for source in sources:
             # print(source)
@@ -82,7 +83,7 @@ async def parsing_tg(kwargs):
                                     bookmarks['bookmarks']['daily'][source] = msg_id
                                 data[source][msg_id]['publish'] = False
             
-            if len(data[source]) < 5:
+            if len(data[source]) < limit:
                 data.pop(source)
                 continue
             
