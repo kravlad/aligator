@@ -48,7 +48,7 @@ async def parsing_tg(kwargs):
             content = soup.find_all('div', class_= 'tgme_widget_message_wrap')
             if len(content) > 0:
                 source = source.split('?')[0]
-                last_id = bookmarks['bookmarks']['regular'][source]
+                last_id = bookmarks['bookmarks']['regular'].get(source, 0)
                 last_daily_id = bookmarks['bookmarks']['daily'].get(source)
                 if not data.get(source):
                     data[source] = {}
@@ -94,10 +94,8 @@ async def parsing_tg(kwargs):
             m_ids = list(data[source].keys())
             
             if m_ids:
-                # print(m_ids[0], ' - ', m_ids[-1])
-                if all_ids[0] > last_id:
+                if all_ids[0] > last_id and last_id != 0:
                     sources.insert(j + 1, f'{source}?before={m_ids[0]}')
-                    # sources.append(f'{source}?before={m_ids[0]}')
                 else:
                     bookmarks['bookmarks']['regular'][source] = m_ids[-1]
                 
