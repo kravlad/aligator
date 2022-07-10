@@ -81,13 +81,13 @@ async def making(data):
     return [msg]
 
 async def parsing_finance(nothing):   
-    for t in range(3):
+    for t in range(3):  #add checking the date
         r = requests.get('https://www.cbr-xml-daily.ru/daily_json.js')
         if r.status_code != 502:
             break
         await asyncio.sleep(3)
     
-    content = json.loads(r.text)
+    content = r.json()
     l = 0
     for i in tickers['cbr-xml-daily']['currencies']:
         val = content['Valute'][i]['Value']
@@ -158,7 +158,7 @@ async def parsing_finance(nothing):
                 break
             await asyncio.sleep(3)
 
-        content = r.json()
+        content = r.json() #add checking the date
         val = content['history']['data'][-1][5]
         val_date = content['history']['data'][-1][2]
         pr_val = content['history']['data'][-2][5]
@@ -177,6 +177,9 @@ async def parsing_finance(nothing):
             'link': f'https://www.moex.com/ru/index/{t}'
         }
 
+    last_close = (date - timedelta(hours=24)).strftime('%Y%m%d')
+    pr_last_close = (date - timedelta(hours=48)).strftime('%Y%m%d')
+
     for i in tickers['yahoo']:
         l = 0
         for k in tickers['yahoo'][i]:
@@ -192,17 +195,27 @@ async def parsing_finance(nothing):
             timestamps = content['chart']['result'][0]['timestamp']
             n = 0
             items = []
+            dict_items = {}
             for item in timestamps:
                 value = content['chart']['result'][0]['indicators']['quote'][0]['close'][n]
                 if value:
+                    ddd = datetime.utcfromtimestamp(item).strftime('%Y%m%d')
+                    dict_items[ddd] = value
                     items.append({
                             'date': datetime.utcfromtimestamp(item),
+                            'str_date': ddd,
                             'value': value if value else 1
                     })
                 n += 1
                 
-            val = items[-2]['value']
-            pr_val = items[-3]['value']
+            val = dict_items.get(last_close, items[-1]['value'])
+            pr_val = dict_items.get(pr_last_close, items[-1]['value'])
+            # if i == 'crypto':
+            #     val = items[-2]['value']
+            #     pr_val = items[-3]['value']
+            # else: #add checking the date
+                # val = items[-1]['value']
+                # pr_val = items[-2]['value']
             diff = val - pr_val
             val = round(val, 2)
             str_val = await dec_place(val)
