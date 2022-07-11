@@ -120,17 +120,25 @@ async def parsing_finance(nothing):
         l = max(length, l)
     data['currencies']['max_len'] = l
     
-    today = date.strftime('%d/%m/%Y')
-    yesterday = (date - timedelta(hours=24)).strftime('%d/%m/%Y')
+    metal_date = date
+    for d in range(15):
+        today = metal_date.strftime('%d/%m/%Y')
+        yesterday = (metal_date - timedelta(hours=24)).strftime('%d/%m/%Y')
 
-    url = f'https://www.cbr.ru/scripts/xml_metall.asp?date_req1={yesterday}&date_req2={today}'
-    for t in range(3):
-        r = requests.get(url)
-        if r.status_code != 502:
+        url = f'https://www.cbr.ru/scripts/xml_metall.asp?date_req1={yesterday}&date_req2={today}'
+        for t in range(3):
+            r = requests.get(url)
+            if r.status_code != 502:
+                break
+            await asyncio.sleep(3)
+
+        content = xmltodict.parse(r.text)
+        if content['Metall'].get('Record'):
             break
-        await asyncio.sleep(3)
-
-    content = xmltodict.parse(r.text)
+        else:
+            metal_date = metal_date - timedelta(hours=24)
+            await asyncio.sleep(3)
+            
     full = len(content['Metall']['Record']) > 4
     
     l = 0

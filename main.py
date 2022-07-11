@@ -42,7 +42,7 @@ def handler(event={}, context=None):
 
 
 if __name__ == "__main__":
-    # test = {"parse": {"finance": []}}
+    test = {"parse": {"finance": []}}
     # test = {"parse": {"intermedia": []}}
     # test = {"parse": {"rbc": {
                         # "finec": ["economy","finance"],
@@ -51,7 +51,7 @@ if __name__ == "__main__":
             # }}}
     # test = {"parse": {"kinonews": []}}
     # test = {"parse": {"calend": []}}
-    test = {"parse": {"telegram": {'sources': [
+    # test = {"parse": {"telegram": {'sources': [
     #                             "meduzalive",
                                 # "svtvnews",
     #                             "theinsider",
@@ -63,12 +63,12 @@ if __name__ == "__main__":
     #                             "mediazonalinks",
     #                             "tvrain",
     #                             "novaya_pishet",
-                                "d_code"
+                                # "d_code"
                                 # "tele_eve"
-                                ], 'params': {'chat_id': 'news_chan', 
-                                            'dayly_chat_id': 'summ_chan', 
+                                # ], 'params': {'chat_id': 'news_chan', 
+                                #             'dayly_chat_id': 'summ_chan', 
                                             # 'dayly_frwd': 'opsp_chan'
-                                            }}}}
+                                            # }}}}
     # test = {"get_bm": {"telegram": {
     #                 "meduzalive": 63275,
     #                 "svtvnews": 10410
