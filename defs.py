@@ -4,6 +4,7 @@ import boto3
 import asyncio
 import requests
 from bs4 import BeautifulSoup
+from datetime import datetime, timedelta
 
 import config as cfg
 
@@ -96,10 +97,10 @@ async def bm(src, data=None):
     return data
 
 
-async def making(data, head, footer, header=True):
+async def making(data, head, footer, header=True, dpip='🔹'):
     new_data = []
     for source in data.keys():
-        pip = pips.get(source, '🔹')
+        pip = pips.get(source, dpip)
         # source_link = link.format(source)
         # head = f'#{source} | {source_link}{hashtag}\n'
         msg = ''
@@ -187,3 +188,13 @@ async def send_telegram(text: str, chat_id, forward=None, parse_mode='HTML', ok=
             chat_id = log_chan
             origin_text = text
             text = r.text
+
+
+async def get_last(data, date, date_sample='%Y%m%d'):
+    val = 0
+    for i in range(15):
+        val = data.get(date.strftime(date_sample), 0)
+        if val:
+            return val
+        else:
+            date = date - timedelta(hours=24)
