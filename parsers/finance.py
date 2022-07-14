@@ -7,12 +7,12 @@ import xmltodict
 from datetime import datetime, timedelta
 
 import config as cfg
-from defs import dec_place, sending, get_balls, envs
+from defs import dec_place, sending, get_balls, envs, get_last
 
 user_agent_headers = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
 
-yurl = 'http://query2.finance.yahoo.com/v8/finance/chart/{}?range=5d&interval=1d'
+yurl = 'http://query2.finance.yahoo.com/v8/finance/chart/{}?range=30d&interval=1d'
 
 tickers = {
     'cbr': {
@@ -80,7 +80,7 @@ async def making(data):
     return [msg]
 
 async def parsing_finance(nothing):
-    date = datetime.now() - timedelta(hours=28)
+    date = datetime.now() #- timedelta(hours=(4*24))
     dates = {
             'val': date.strftime('%d.%m.%Y'),
             'pr_val': (date - timedelta(hours=24)).strftime('%d.%m.%Y')}
@@ -133,29 +133,19 @@ async def parsing_finance(nothing):
     content = xmltodict.parse(r.text)
     metals = content['Metall']['Record']
     values = {}
-    dates = []
     for i in metals:
-        val_date = i['@Date']
-        if not values.get(val_date):
-            values[val_date] = {}
-        values[val_date][i['@Code']] = i['Buy']
-    dates = list(values.keys())
-
-    today = date.strftime('%d.%m.%Y')
-    yesterday = (date - timedelta(hours=24)).strftime('%d.%m.%Y')
+        item = i['@Code']
+        if not values.get(item):
+            values[item] = {}
+        values[item][i['@Date']] = i['Buy']
 
     l = 0
     for i in tickers['cbr']['metals']:
         t = tickers['cbr']['metals'][i]
-        val = values.get(dates[-1])[t]
-        if values.get(yesterday):
-            pr_val = values.get(yesterday)[t]
-        else:
-            if dates[-1] == today:
-                pr_val = values.get(dates[-2])[t]
-            else:
-                pr_val = val
-                
+        
+        val = await get_last(values[t], date, '%d.%m.%Y')
+        pr_val = await get_last(values[t], (date - timedelta(hours=24)), '%d.%m.%Y')
+        
         val = float(val.replace(',', '.'))
         pr_val = float(pr_val.replace(',', '.'))
         dif = round(val - pr_val, 2)
@@ -175,7 +165,7 @@ async def parsing_finance(nothing):
 
 
     date1 = (date - timedelta(weeks=2)).strftime('%Y-%m-%d')
-    date2 = (date - timedelta(hours=24)).strftime('%Y-%m-%d')
+    date2 = date.strftime('%Y-%m-%d')
     for i in tickers['moex']['indices']:
         t = tickers['moex']['indices'][i]
         url = f'https://iss.moex.com/iss/history/engines/stock/markets/index/securities/{t}.json?from={date1}&till={date2}'
@@ -186,14 +176,11 @@ async def parsing_finance(nothing):
             await asyncio.sleep(3)
 
         content = r.json() #add checking the date
-        val = content['history']['data'][-1][5]
-        # val_date = content['history']['data'][-1][2]
-        pr_val_date = content['history']['data'][-2][2]
-        if (pr_val_date == (date - timedelta(hours=48)).strftime('%Y-%m-%d')) or (content['history']['data'][-1][2] == date2):
-            pr_val = content['history']['data'][-2][5]
-        else:
-            pr_val = val
-                
+        values = {i[2]: i[5] for i in content['history']['data']}
+        
+        val = await get_last(values, (date - timedelta(hours=24)), '%Y-%m-%d')
+        pr_val = await get_last(values, (date - timedelta(hours=48)), '%Y-%m-%d')
+        
         dif = round(val - pr_val, 2)
         perc = round((val - pr_val) / pr_val * 100, 2)
         str_val = await dec_place(round(val, 2))
@@ -207,11 +194,8 @@ async def parsing_finance(nothing):
             'link': f'https://www.moex.com/ru/index/{t}'
         }
 
-    
     date1 = date - timedelta(hours=24)
     date2 = date - timedelta(hours=48)
-    last_close = date1.strftime('%Y%m%d')
-    pr_last_close = date2.strftime('%Y%m%d')
 
     for i in tickers['yahoo']:
         l = 0
@@ -232,34 +216,18 @@ async def parsing_finance(nothing):
             for item in timestamps:
                 value = content['chart']['result'][0]['indicators']['quote'][0]['close'][n]
                 if value:
-                    ddd = datetime.utcfromtimestamp(item).strftime('%Y%m%d')
+                    dd = datetime.utcfromtimestamp(item)
+                    ddd = dd.strftime('%Y%m%d')
                     dict_items[ddd] = value
                     items.append({
                             'date': datetime.utcfromtimestamp(item),
                             'str_date': ddd,
                             'value': value if value else 1
                     })
-                n += 1
-                
-            val = dict_items.get(last_close, items[-1]['value'])
-            if dict_items.get(pr_last_close):
-                pr_val = dict_items.get(pr_last_close)
-            else:
-                if date1 == today:
-                    x = timestamps[-2]
-                    y = datetime.utcfromtimestamp(x).strftime('%Y%m%d')
-                    pr_val = dict_items.get(y)
-                else:
-                    pr_val = val
-                
-                
-                pr_val = dict_items.get(pr_last_close, val)
-            # if i == 'crypto':
-            #     val = items[-2]['value']
-            #     pr_val = items[-3]['value']
-            # else: #add checking the date
-                # val = items[-1]['value']
-                # pr_val = items[-2]['value']
+                n += 1            
+            
+            val = await get_last(dict_items, date1)
+            pr_val = await get_last(dict_items, date2)
             diff = val - pr_val
             val = round(val, 2)
             str_val = await dec_place(val)
@@ -284,16 +252,11 @@ async def parsing_finance(nothing):
     ngf = data['commodities']['values']['Gas']
     eurusd = data['tmp']['values']['EURUSD']['val']
     val = ngf['val'] / 0.02802113521 / eurusd
-    # pr_val = ngf['pr_val'] / 0.02802113521 / eurusd
 
     r_val = round(val, 2)
     str_val = await dec_place(r_val)
-    # dif = round(val - pr_val, 2)
-    # perc = round((val - pr_val) / pr_val * 100, 2)
-    # str_perc = await dec_place(perc)
     length = len(str_val) + 3
     data['commodities']['values']['Gas'].update({'str_val': str_val, 'len': length})
-    # data['commodities']['values']['Gas'].update({'str_val': str_val, 'dif': dif, 'str_dif': str_perc, 'len': length})
 
     data.pop('tmp')
 
