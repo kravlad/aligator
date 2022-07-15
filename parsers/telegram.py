@@ -61,8 +61,11 @@ async def parsing_tg(kwargs):
 
                     if msg_id > last_id:
                         x = tmp.find('div', class_= 'tgme_widget_message_text js-message_text')
-                        y = [str(i) for i in x.contents]
-                        html_text = ''.join(y)
+                        if x:
+                            y = [str(i) for i in x.contents]
+                            html_text = ''.join(y)
+                        else:
+                            html_text = ''
                         if 'pinned' not in html_text:
                             new_text = await replacing(html_text, replacement)
                             while new_text.startswith('\n'):

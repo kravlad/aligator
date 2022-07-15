@@ -196,5 +196,4 @@ async def get_last(data, date, date_sample='%Y%m%d'):
         val = data.get(date.strftime(date_sample), 0)
         if val:
             return val
-        else:
-            date = date - timedelta(hours=24)
+        date = date - timedelta(hours=24)

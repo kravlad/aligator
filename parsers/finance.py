@@ -3,14 +3,15 @@ import json
 import asyncio
 import requests
 import xmltodict
-# import yfinance as yf
 from datetime import datetime, timedelta
 
 import config as cfg
 from defs import dec_place, sending, get_balls, envs, get_last
 
-user_agent_headers = {
-    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
+USER_AGENT_HEADER = {'''
+    User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) 
+    Chrome/39.0.2171.95 Safari/537.36
+    '''}
 
 yurl = 'http://query2.finance.yahoo.com/v8/finance/chart/{}?range=30d&interval=1d'
 
@@ -203,17 +204,17 @@ async def parsing_finance(nothing):
             ticker = tickers['yahoo'][i][k]
             url = yurl.format(ticker)
             for t in range(3):
-                r = requests.get(url=url, headers=user_agent_headers)
+                r = requests.get(url=url, headers=USER_AGENT_HEADER)
                 if r.status_code != 502:
                     break
                 await asyncio.sleep(3)
             
             content = json.loads(r.text)
             timestamps = content['chart']['result'][0]['timestamp']
-            n = 0
+            # n = 0
             items = []
             dict_items = {}
-            for item in timestamps:
+            for n, item in enumerate(timestamps):
                 value = content['chart']['result'][0]['indicators']['quote'][0]['close'][n]
                 if value:
                     dd = datetime.utcfromtimestamp(item)
@@ -224,7 +225,7 @@ async def parsing_finance(nothing):
                             'str_date': ddd,
                             'value': value if value else 1
                     })
-                n += 1            
+                # n += 1            
             
             val = await get_last(dict_items, date1)
             pr_val = await get_last(dict_items, date2)
