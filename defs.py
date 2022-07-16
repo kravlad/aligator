@@ -10,6 +10,8 @@ import config as cfg
 
 token = os.environ.get('TOKEN')
 news_chan = os.environ.get('NEWS_CHAN')
+news2_chan = os.environ.get('NEWS2_CHAN')
+crypto_chan = os.environ.get('CRYPTO_CHAN')
 summ_chan = os.environ.get('SUMM_CHAN')
 log_chan = os.environ.get('LOG_CHAN')
 opsp_chan = os.environ.get('OPSP_CHAN')
@@ -21,6 +23,8 @@ summ_footer = os.environ.get('SUMM_FOOTER')
 
 envs = {
     'news_chan': news_chan,
+    'news2_chan': news2_chan,
+    'crypto_chan': crypto_chan,
     'summ_chan': summ_chan,
     'opsp_chan': opsp_chan,
     'news_footer': news_footer,
@@ -115,6 +119,7 @@ async def making(data, head, footer, header=True, dpip='🔹'):
                             text = soup[:250] + '...'
                     else:
                         text = data[source][n]['html_text']
+                    text = await html_fix(text)
                     lnk = data[source][n]['link']
                     item = f'{pip}{text} / <a href="{lnk}">read</a>\n\n'
                     if i <= 15:
@@ -186,7 +191,7 @@ async def send_telegram(text: str, chat_id, forward=None, parse_mode='HTML', ok=
             ok = False
             parse_mode = None
             chat_id = log_chan
-            origin_text = text
+            origin_text = text[:4096]
             text = r.text
 
 
@@ -197,3 +202,14 @@ async def get_last(data, date, date_sample='%Y%m%d'):
         if val:
             return val
         date = date - timedelta(hours=24)
+        
+        
+async def html_fix(text):
+    start = 0
+    for e in range(4296):
+        start = text.find('<', start)
+        if text[start:(start + 2)] not in cfg.tags:
+            text = f'{text[:start]}&lt;{text[(start + 1):]}'
+        if start < 0:
+            return text
+        start += 1

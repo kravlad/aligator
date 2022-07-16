@@ -114,6 +114,5 @@ async def parsing_tg(kwargs):
         
         for m in data.keys():
             head = f'@{m} | #{m} | #новости'
-            msg = await making({m: data[m]}, head, footer=envs['news_footer'])
-            # msgs.append(msg)
-            await sending(msg, chat_id=chat_id)
+            msgs = await making({m: data[m]}, head, footer=envs['news_footer'])
+            await sending(msgs, chat_id=chat_id)
