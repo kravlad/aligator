@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import asyncio
 from datetime import timedelta
@@ -217,11 +218,9 @@ async def get_last(data, date, date_sample='%Y%m%d'):
 
 async def html_fix(text):
     """docstring."""
-    start = 0
-    for _ in range(4296):
-        start = text.find('<', start)
-        if text[start:(start + 2)] not in cfg.tags:
-            text = f'{text[:start]}&lt;{text[(start + 1):]}'
-        if start < 0:
-            return text
-        start += 1
+    res = re.findall('<.*?>', text)
+    for i in res:
+        if i not in cfg.tags and not i.startswith('<a href=') and not i.startswith('<span class=') and not i.startswith('<code class='):
+            index = text.find(i)
+            text = f'{text[:index]}&lt;{i[1:-1]}&gt;{text[(index+len(i)):]}'
+    return text

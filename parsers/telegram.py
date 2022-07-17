@@ -65,7 +65,7 @@ async def parsing_tg(kwargs):
                             y = [str(i) for i in x.contents]
                             html_text = ''.join(y)
                         else:
-                            html_text = ''
+                            html_text = '...'
                         if 'pinned' not in html_text:
                             new_text = await replacing(html_text, replacement)
                             while new_text.startswith('\n'):
