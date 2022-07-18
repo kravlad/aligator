@@ -44,7 +44,7 @@ def handler(event, context=None):  # pylint: disable=unused-argument
 
 
 if __name__ == "__main__":
-    # test = {"parse": {"finance": []}}
+    test = {"parse": {"finance": []}}
     # test = {"parse": {"intermedia": []}}
     # test = {"parse": {"rbc": {
     #                     "finec": ["economy","finance"],
@@ -52,9 +52,9 @@ if __name__ == "__main__":
     #                     "politic": ["politic"]
     #        }}}
     # test = {"parse": {"kinonews": []}}
-    test = {"parse": {"calend": []}}
-    test = {"parse": {"telegram": {'sources': [
-                                    "prlgrm"
+    # test = {"parse": {"calend": []}}
+    # test = {"parse": {"telegram": {'sources': [
+    #                                 "prlgrm"
     #                            "meduzalive",
     # "svtvnews",
     #                             "theinsider",
@@ -68,10 +68,10 @@ if __name__ == "__main__":
     #                             "novaya_pishet",
     # "d_code"
     # "tele_eve"
-    ], 'params': {'chat_id': 'news_chan',
+    # ], 'params': {'chat_id': 'news_chan',
     #               'dayly_chat_id': 'summ_chan',
     #               # 'dayly_frwd': 'opsp_chan'
-                  }}}}
+                #   }}}}
     # test = {"get_bm": {"telegram": {
     #                 "meduzalive": 63275,
     #                 "svtvnews": 10410

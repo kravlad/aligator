@@ -8,10 +8,8 @@ from datetime import datetime, timedelta
 # import config as cfg
 from defs import dec_place, sending, get_balls, envs, get_last
 
-USER_AGENT_HEADER = {'''
-    User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko)
-    Chrome/39.0.2171.95 Safari/537.36
-    '''}
+USER_AGENT_HEADER = {'User-Agent':
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
 
 yurl = 'http://query2.finance.yahoo.com/v8/finance/chart/{}?range=30d&interval=1d'
 
