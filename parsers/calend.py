@@ -1,39 +1,39 @@
+from datetime import datetime
 import requests
 from bs4 import BeautifulSoup
-from datetime import datetime, timedelta
 
-import config as cfg
-from defs import sending, envs
+import config as cfg  # pylint: disable=import-error
+from defs import sending, envs  # pylint: disable=import-error
 
 website = cfg.urls['calend']['url']
-date = datetime.now() # - timedelta(hours=24)
-str_date = '{}-{}-{}'.format(date.year, date.month, date.day)
+date = datetime.now()  # - timedelta(hours=24)
+str_date = f'{date.year}-{date.month}-{date.day}'
 pips = cfg.pips
 chapts = cfg.urls['calend']['chapts']
-pages = [['holidays','events'],['persons']]
+pages = [['holidays', 'events'], ['persons']]
 
 hashtags = {'holidays': 'события',
-            'thisDay': 'события',
+            'this_day': 'события',
             'events': 'события',
             'births': 'персоны',
-            'mourns': 'персоны'
-    }
+            'mourns': 'персоны'}
+
 
 async def making(data):
+    """docstring."""
     tmp = list(data.keys())[0]
-    head = 'calend.ru | #календарь | #{}\n'.format(hashtags[tmp])
+    head = f'calend.ru | #календарь | #{hashtags[tmp]}\n'
     msg = ''
     for src in data.keys():
         pip = pips.get(src, '🔹')
         h2 = chapts[src]
         msg = f'{msg}\n{h2}:\n'
         if data[src]:
-            i = 0
+            # i = 0
             for n in data[src]:
                 lnk = data[src][n]['link']
                 text = data[src][n]['text']
-                
-                if src in ['holidays','thisDay']:
+                if src in ['holidays', 'this_day']:
                     spl_text = text.split()
                     frst_half = spl_text[0]
                     snd_half = ' '.join(spl_text[1:])
@@ -50,32 +50,37 @@ async def making(data):
         msg = f'\n\n{head}{msg}\n{head}@{footer}'
     return msg
 
-async def parsing_calend(nothing):    
+
+async def parsing_calend(nothing):
+    """docstring."""
     datas = []
     for p in pages:
         data = {}
         chapts = {}
         for page in p:
-            for i in range(3):
+            for _ in range(3):
                 r = requests.get(f'{website}/{page}/{str_date}')
                 if r.status_code != 502:
                     break
-                await asyncio.sleep(3)
-                
+                await asyncio.sleep(3)  # noqa: F821  # pylint: disable=undefined-variable
+
             soup = BeautifulSoup(r.content, 'html.parser')
             if page == 'holidays':
                 holidays = soup.find_all('div', class_='block holidays')[0]
-                thisDay = soup.find_all('div', class_='block thisDay')
-                chapts['holidays'] = holidays.find_all('li', class_='three-three')
-                if thisDay:
-                    chapts['thisDay'] = thisDay[0].find_all('li', class_='three-three')
+                this_day = soup.find_all('div', class_='block thisDay')
+                chapts['holidays'] = holidays.find_all(
+                    'li', class_='three-three')
+                if this_day:
+                    chapts['this_day'] = this_day[0].find_all(
+                        'li', class_='three-three')
             elif page == 'events':
-                events = soup.find_all('div', class_='knownDates famous-date')[0]
+                events = soup.find_all(
+                    'div', class_='knownDates famous-date')[0]
                 chapts['events'] = events.find_all('li', class_='three-three')
             elif page == 'persons':
                 chapts['births'] = soup.find_all('li', class_='one-four birth')
                 chapts['mourns'] = soup.find_all('li', class_='one-four mourn')
-                
+
         for chapt in chapts:
             k = 0
             data[chapt] = {}
@@ -86,20 +91,21 @@ async def parsing_calend(nothing):
                 if chapt == 'events':
                     b_year = item.find('span', {'class': 'year'}).text
                     d_year = ''
-                elif chapt in ['births','mourns']:
-                    b_year = item.find('span', {'class': 'year'}).text.split()[-1]
+                elif chapt in ['births', 'mourns']:
+                    b_year = item.find(
+                        'span', {'class': 'year'}).text.split()[-1]
                     tmp = item.find('span', {'class': 'year2'})
                     d_year = tmp.text if tmp else ''
                 else:
                     b_year = ''
                     d_year = ''
                 data[chapt][k] = {'link': link,
-                                'b_year': b_year,
-                                'd_year': d_year,
-                                'text': title}
-                k += 1        
+                                  'b_year': b_year,
+                                  'd_year': d_year,
+                                  'text': title}
+                k += 1
         datas.append(data)
-    
+
     msgs = []
     for d in datas:
         msg = await making(d)

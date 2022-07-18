@@ -1,15 +1,18 @@
 import os
+import re
 import json
-import boto3
 import asyncio
+from datetime import timedelta
+import boto3
 import requests
 from bs4 import BeautifulSoup
-from datetime import datetime, timedelta
 
 import config as cfg
 
 token = os.environ.get('TOKEN')
 news_chan = os.environ.get('NEWS_CHAN')
+news2_chan = os.environ.get('NEWS2_CHAN')
+crypto_chan = os.environ.get('CRYPTO_CHAN')
 summ_chan = os.environ.get('SUMM_CHAN')
 log_chan = os.environ.get('LOG_CHAN')
 opsp_chan = os.environ.get('OPSP_CHAN')
@@ -21,19 +24,23 @@ summ_footer = os.environ.get('SUMM_FOOTER')
 
 envs = {
     'news_chan': news_chan,
+    'news2_chan': news2_chan,
+    'crypto_chan': crypto_chan,
     'summ_chan': summ_chan,
     'opsp_chan': opsp_chan,
     'news_footer': news_footer,
     'summ_footer': summ_footer,
 }
 
-tg_link = cfg.urls['telegram']
+# TG_LINK = cfg.urls['telegram']
 pips = cfg.pips
 
 cwd = os.getcwd().split('/')[1]
-hosting = True if cwd == 'var' else False
+HOSTING = True if cwd == 'var' else False
+
 
 async def replacing(text, replacements, spell=False):
+    """docstring."""
     if text is None:
         return
     if spell:
@@ -45,6 +52,7 @@ async def replacing(text, replacements, spell=False):
 
 
 async def get_balls(num):
+    """docstring."""
     if num > 0:
         sign = '🟢'
     elif num < 0:
@@ -55,6 +63,7 @@ async def get_balls(num):
 
 
 async def dec_place(num):
+    """docstring."""
     # locale.setlocale(locale.LC_ALL, 'ru_RU.utf8') #ru_RU.UTF-8 for Mac
     # val = '{:n}'.format(num)
     val = '{:,.2f}'.format(num).replace(',', ' ')
@@ -62,6 +71,7 @@ async def dec_place(num):
 
 
 async def aws_s3_dupload(src, to, dl):
+    """docstring."""
     s3 = boto3.resource('s3')
     mybucket = 'my-work-frt-bucket'
     if dl:
@@ -71,33 +81,36 @@ async def aws_s3_dupload(src, to, dl):
 
 
 async def save_bm(src):
+    """docstring."""
     confile = f'{bm_path}{src}.json'
-    if hosting:
+    if HOSTING:
         await aws_s3_dupload(f'{bucket_path}/bm/{src}.json', confile, True)
-    with open(confile, 'r') as f:
+    with open(confile, 'r', encoding='UTF-8') as f:
         text = f.read()
     await send_telegram(text, log_chan)
 
 
 async def bm(src, data=None):
+    """docstring."""
     confile = f'{bm_path}{src}.json'
     if data:
-        with open(confile, 'w+') as f:
+        with open(confile, 'w+', encoding='UTF-8') as f:
             json.dump(data, f)
-        
-        if hosting:
+
+        if HOSTING:
             await aws_s3_dupload(confile, f'{bucket_path}/bm/{src}.json', False)
-    
+
     else:
-        if hosting:
+        if HOSTING:
             await aws_s3_dupload(f'{bucket_path}/bm/{src}.json', confile, True)
-        
-        with open(confile, 'r') as f:
+
+        with open(confile, 'r', encoding='UTF-8') as f:
             data = json.load(f)
     return data
 
 
 async def making(data, head, footer, header=True, dpip='🔹'):
+    """docstring."""
     new_data = []
     for source in data.keys():
         pip = pips.get(source, dpip)
@@ -111,10 +124,13 @@ async def making(data, head, footer, header=True, dpip='🔹'):
                     if header:
                         text = data[source][n]['header']
                         soup = BeautifulSoup(text, 'html.parser').text
-                        if len(soup) > 250:
+                        open_a = len(re.findall('<a href=', text))
+                        closed_a = len(re.findall('</a>', text))
+                        if len(soup) > 250 or open_a != closed_a:
                             text = soup[:250] + '...'
                     else:
                         text = data[source][n]['html_text']
+                    text = await html_fix(text)
                     lnk = data[source][n]['link']
                     item = f'{pip}{text} / <a href="{lnk}">read</a>\n\n'
                     if i <= 15:
@@ -132,44 +148,46 @@ async def making(data, head, footer, header=True, dpip='🔹'):
 
 
 async def sending(msgs, chat_id, forward=None):
+    """docstring."""
     for msg in msgs:
         await send_telegram(msg, chat_id, forward)
         await asyncio.sleep(3)
 
 
 async def frwd_telegram(message_id, chat_id=opsp_chan, from_chat_id=summ_chan):
+    """docstring."""
     method = f'https://api.telegram.org/bot{token}/forwardMessage'
 
     r = requests.post(method, data={
         "chat_id": chat_id,
         "from_chat_id": from_chat_id,
         "message_id": message_id,
-        'disable_notification': True
-        })
+        'disable_notification': True})
 
     if r.status_code != 200:
         text = json.loads(r.text)
-        text.update({'from_chat_id': 'https://t.me/c/{}'.format(str(from_chat_id)[3:]), 
-                    'chat_id': 'https://t.me/c/{}'.format(str(chat_id)[3:]),
+        text.update({
+                    'from_chat_id': f'https://t.me/c/{str(from_chat_id)[3:]}',
+                    'chat_id': f'https://t.me/c/{str(chat_id)[3:]}',
                     'message_id': message_id,
-                    'link': 'https://t.me/c/{}/{}'.format(str(chat_id)[3:], message_id)})
+                    'link': f'https://t.me/c/{str(chat_id)[3:]}/{message_id}'})
         await send_telegram(text=str(text), chat_id=log_chan, parse_mode=None)
 
 
 async def send_telegram(text: str, chat_id, forward=None, parse_mode='HTML', ok=True):
+    """docstring."""
     method = f'https://api.telegram.org/bot{token}/sendMessage'
-    for i in range(3):
-        for i in range(5):
+    for _ in range(3):
+        for _ in range(5):
             try:
-                r = requests.post(method, data={
-                "chat_id": chat_id,
-                "text": text,
-                'parse_mode': parse_mode,
-                'disable_web_page_preview': True,
-                'disable_notification': True
-                })
-            except requests.exceptions.ConnectionError as e:
-                print(e)
+                r = requests.post(method, data={'chat_id': chat_id,
+                                                'text': text,
+                                                'parse_mode': parse_mode,
+                                                'disable_web_page_preview': True,
+                                                'disable_notification': True
+                                                })
+            except requests.exceptions.ConnectionError as err:
+                print(err)
                 continue
             else:
                 break
@@ -181,20 +199,30 @@ async def send_telegram(text: str, chat_id, forward=None, parse_mode='HTML', ok=
                 await frwd_telegram(message_id, forward, chat_id)
             break
         elif r.status_code == 200 and not ok:
-            text = origin_text
+            text = origin_text  # noqa: F821
         else:
             ok = False
             parse_mode = None
             chat_id = log_chan
-            origin_text = text
+            origin_text = text[:4096]  # noqa: F841
             text = r.text
 
 
 async def get_last(data, date, date_sample='%Y%m%d'):
+    """docstring."""
     val = 0
-    for i in range(15):
+    for _ in range(15):
         val = data.get(date.strftime(date_sample), 0)
         if val:
             return val
-        else:
-            date = date - timedelta(hours=24)
+        date = date - timedelta(hours=24)
+
+
+async def html_fix(text):
+    """docstring."""
+    res = re.findall('<.*?>', text)
+    for i in res:
+        if i not in cfg.tags and not i.startswith('<a href=') and not i.startswith('<span class=') and not i.startswith('<code class=') and not i.startswith('<i class='):
+            index = text.find(i)
+            text = f'{text[:index]}&lt;{i[1:-1]}&gt;{text[(index+len(i)):]}'
+    return text
