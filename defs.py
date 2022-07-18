@@ -124,7 +124,9 @@ async def making(data, head, footer, header=True, dpip='🔹'):
                     if header:
                         text = data[source][n]['header']
                         soup = BeautifulSoup(text, 'html.parser').text
-                        if len(soup) > 250:
+                        open_a = len(re.findall('<a href=', text))
+                        closed_a = len(re.findall('</a>', text))
+                        if len(soup) > 250 or open_a != closed_a:
                             text = soup[:250] + '...'
                     else:
                         text = data[source][n]['html_text']
@@ -220,7 +222,7 @@ async def html_fix(text):
     """docstring."""
     res = re.findall('<.*?>', text)
     for i in res:
-        if i not in cfg.tags and not i.startswith('<a href=') and not i.startswith('<span class=') and not i.startswith('<code class='):
+        if i not in cfg.tags and not i.startswith('<a href=') and not i.startswith('<span class=') and not i.startswith('<code class=') and not i.startswith('<i class='):
             index = text.find(i)
             text = f'{text[:index]}&lt;{i[1:-1]}&gt;{text[(index+len(i)):]}'
     return text

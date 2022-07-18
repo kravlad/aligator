@@ -94,24 +94,25 @@ async def parsing_tg(kwargs):
                                     bookmarks['bookmarks']['daily'][source] = msg_id
                                 data[source][msg_id]['publish'] = False
 
-            if len(data[source]) < limit:
-                data.pop(source)
-                continue
+            if data.get(source):
+                if len(data[source]) < limit:
+                    data.pop(source)
+                    continue
 
-            sorted_tuple = sorted(data[source].items(), key=lambda x: x[0])
-            data[source] = dict(sorted_tuple)
+                sorted_tuple = sorted(data[source].items(), key=lambda x: x[0])
+                data[source] = dict(sorted_tuple)
 
-            # all_ids.sort()
-            m_ids = list(data[source].keys())
+                # all_ids.sort()
+                m_ids = list(data[source].keys())
 
-            if m_ids:
-                if all_ids[0] > last_id and last_id != 0:
-                    sources.insert(j + 1, f'{source}?before={m_ids[0]}')
-                else:
-                    bookmarks['bookmarks']['regular'][source] = m_ids[-1]
+                if m_ids:
+                    if all_ids[0] > last_id and last_id != 0:
+                        sources.insert(j + 1, f'{source}?before={m_ids[0]}')
+                    else:
+                        bookmarks['bookmarks']['regular'][source] = m_ids[-1]
 
-            j += 1
-            await asyncio.sleep(3)
+                j += 1
+                await asyncio.sleep(3)
 
         bookmarks['date'] = str(datetime.now())
         await bm(src='telegram', data=bookmarks)

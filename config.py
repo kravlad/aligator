@@ -15,7 +15,9 @@ replacement = {'telegram': {
                     '\n \n\n': '\n\n',
                     '\n\n \n': '\n\n',
                     '\n\n\n': '\n\n',
-                    '  ': ' '
+                    '  ': ' ',
+                    '\n\n</a>': '</a>\n\n',
+                    '\n</a>': '</a>\n'
 }}
 
 tickers = {
